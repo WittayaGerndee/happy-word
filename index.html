@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Happy Word Adventure — น้องคำดี ตะลุยโลกภาษา</title>
+<meta name="description" content="เกมเรียนคำศัพท์ภาษาอังกฤษแบบเล่นเพลิน สำหรับเด็ก 4-5 ปี">
+<meta name="theme-color" content="#FFC93C">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐰</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- ท้องฟ้าและสิ่งที่ขยับตลอดเวลา -->
+  <div class="ambient" aria-hidden="true">
+    <div class="cloud c1">☁️</div>
+    <div class="cloud c2">☁️</div>
+    <div class="cloud c3">☁️</div>
+    <div id="butterflyLayer"></div>
+  </div>
+
+  <!-- พื้นหญ้า -->
+  <div class="ground" aria-hidden="true"></div>
+
+  <!-- หน้าจอทั้งหมดถูกวาดลงตรงนี้ -->
+  <main id="app" role="main"></main>
+
+  <!-- แถบบน: ดาว -->
+  <div id="topbar" class="topbar" hidden>
+    <button class="icon-btn" id="btnHome" aria-label="กลับหน้าแรก">🏠</button>
+    <div class="stars" id="starBox" aria-live="polite">
+      <span class="star-icon">⭐</span><span id="starCount">0</span>
+    </div>
+  </div>
+
+  <!-- ประกาศให้ screen reader -->
+  <div id="announcer" role="status" aria-live="polite" class="sr-only"></div>
+
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <script src="data/animals.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

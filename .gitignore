@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Node (เผื่ออนาคต)
+node_modules/
+npm-debug.log*
+
+# Cloudflare
+.wrangler/
+
+# รูปต้นฉบับที่ยังไม่ได้ใช้ในเกม (ไฟล์ใหญ่)
+uploads/

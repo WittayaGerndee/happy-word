@@ -1,0 +1,18 @@
+# Cloudflare Pages — HTTP headers
+# เอกสาร: https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+
+# ไฟล์เกมเปลี่ยนบ่อยระหว่างพัฒนา — อย่า cache นาน
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=3600
+
+/data/*
+  Cache-Control: public, max-age=3600
