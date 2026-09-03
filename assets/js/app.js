@@ -113,10 +113,15 @@ function unlockAudio() {
       s.buffer = b; s.connect(audioCtx.destination); s.start(0);
     }
     if (window.speechSynthesis) {
-      var u = new SpeechSynthesisUtterance(' ');
-      u.volume = 0;
+      /* พูดเงียบ ๆ หนึ่งครั้งในจังหวะที่ผู้ใช้แตะ เพื่อขออนุญาตใช้เสียงจากเบราว์เซอร์ */
+      try { speechSynthesis.cancel(); } catch (e) {}
+      var u = new SpeechSynthesisUtterance('a');
+      u.volume = 0; u.rate = 10;
       speechSynthesis.speak(u);
       pickVoice();
+      /* บางเบราว์เซอร์โหลดรายชื่อเสียงช้า ลองเลือกซ้ำอีกรอบ */
+      setTimeout(pickVoice, 400);
+      setTimeout(pickVoice, 1500);
     }
   } catch (e) {}
 }
@@ -141,19 +146,64 @@ document.addEventListener('visibilitychange', function () {
 
 /* พูดคำภาษาอังกฤษ — ตอนนี้ใช้ TTS ของเครื่อง
    เมื่อมีไฟล์เสียงอัดจริง ให้เช็ค word.audio ก่อนตรงนี้ */
+var speakTimer = null;
+var keepAliveTimer = null;
+
+/* Chrome หยุดพูดเองเมื่อพูดต่อเนื่องนานเกิน 15 วินาที
+   ต้อง pause/resume เป็นระยะเพื่อกันเสียงหายกลางคัน */
+function keepSpeechAlive() {
+  clearInterval(keepAliveTimer);
+  keepAliveTimer = setInterval(function () {
+    try {
+      if (speechSynthesis.speaking) { speechSynthesis.pause(); speechSynthesis.resume(); }
+      else clearInterval(keepAliveTimer);
+    } catch (e) { clearInterval(keepAliveTimer); }
+  }, 8000);
+}
+
 function speak(text, opts) {
-  if (!state.settings.sound || !window.speechSynthesis) return;
+  if (!state.settings.sound || !window.speechSynthesis || !text) return;
   opts = opts || {};
-  try {
-    speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US';
-    u.rate = opts.rate || 0.78;
-    u.pitch = opts.pitch || 1.15;
-    u.volume = 1;
-    if (voice) u.voice = voice;
-    speechSynthesis.speak(u);
-  } catch (e) {}
+
+  clearTimeout(speakTimer);
+  try { speechSynthesis.cancel(); } catch (e) {}
+
+  /* Chrome จะทิ้ง utterance ถ้าเรียก speak() ทันทีหลัง cancel()
+     ต้องหน่วงสักเสี้ยววินาที เสียงถึงจะออกทุกครั้ง */
+  speakTimer = setTimeout(function () {
+    try {
+      if (!voice) pickVoice();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = (voice && voice.lang) || 'en-US';
+      u.rate = opts.rate || 0.78;
+      u.pitch = opts.pitch || 1.15;
+      u.volume = 1;
+      if (voice) u.voice = voice;
+      speechSynthesis.speak(u);
+      keepSpeechAlive();
+    } catch (e) {}
+  }, 90);
+}
+
+/* วงแหวนกระเพื่อมรอบสิ่งที่กำลังถูกอ่านออกเสียง */
+function pulse(node) {
+  if (!node) return;
+  node.classList.remove('speaking');
+  void node.offsetWidth;
+  node.classList.add('speaking');
+  setTimeout(function () { node.classList.remove('speaking'); }, 900);
+}
+
+/* ป้ายคำศัพท์ลอยขึ้นตอนอ่านออกเสียง — ให้เด็กเห็นคำที่กำลังได้ยิน */
+function sayLabel(node, word, stage) {
+  if (!node || !stage) return;
+  var lab = document.createElement('div');
+  lab.className = 'say-label';
+  lab.innerHTML = '<span class="sl-icon">🔊</span>' + word;
+  lab.style.left = node.style.left || '50%';
+  lab.style.top = node.style.top || '50%';
+  stage.appendChild(lab);
+  setTimeout(function () { lab.remove(); }, 1600);
 }
 
 /* เสียงเอฟเฟกต์สังเคราะห์ด้วย WebAudio — ยังไม่ต้องมีไฟล์ mp3 */
@@ -453,7 +503,7 @@ Screens.freeplay = function () {
 
   var cols = window.innerWidth < 560 ? 3 : 4;
   var rows = Math.ceil(list.length / cols);
-  var rowGap = rows > 1 ? (84 / (rows - 1)) : 0;
+  var rowGap = rows > 1 ? (72 / (rows - 1)) : 0;   /* เว้นที่ด้านล่างไว้ให้ปุ่มเล่นเกม */
   var taps = 0, invited = false;
 
   list.forEach(function (w, i) {
@@ -466,7 +516,8 @@ Screens.freeplay = function () {
 
     b.addEventListener('click', function () {
       sfx.pop();
-      speak(w.english);
+      speak(w.english);            /* อ่านออกเสียงชื่อสัตว์เป็นภาษาอังกฤษ */
+      sayLabel(b, w.english, stage); /* แสดงคำที่กำลังอ่านให้เห็นด้วย */
 
       var moves = ['jump', 'wiggle', 'spin'];
       var m = moves[(Math.random() * moves.length) | 0];
@@ -531,7 +582,8 @@ Screens.learn = function (params) {
   art.setAttribute('aria-label', w.english);
   art.addEventListener('click', function () {
     sfx.pop();
-    speak(w.english);
+    speak(w.english);            /* อ่านออกเสียงชื่อสัตว์ */
+    pulse(art);
     art.style.animation = 'none';
     void art.offsetWidth;
     art.style.animation = 'aJump .55s var(--ease-bounce)';
@@ -662,10 +714,12 @@ Screens.quiz = function (params) {
       return;
     }
 
-    /* ยังไม่ถูก — ค่อย ๆ ช่วย ไม่มีการลงโทษ */
+    /* ยังไม่ถูก — ค่อย ๆ ช่วย ไม่มีการลงโทษ
+       และถือโอกาสสอนว่าตัวที่แตะไปคือตัวอะไร */
     attempts++;
     rec.wrong++;
     sfx.gentle();
+    speak(choice.english);
     node.classList.remove('shake');
     void node.offsetWidth;
     node.classList.add('shake');
@@ -775,7 +829,7 @@ Screens.zoo = function () {
     c.addEventListener('click', function () {
       sfx.pop();
       if (!has) return;
-      speak(w.english);
+      speak(w.english);            /* อ่านออกเสียงชื่อสัตว์ */
       var e = c.querySelector('.ze');
       e.style.animation = 'none';
       void e.offsetWidth;

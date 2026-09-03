@@ -452,3 +452,41 @@ body.night .ground { background: linear-gradient(180deg, #5C8A52 0%, #3F6438 100
     transition-duration: .01ms !important;
   }
 }
+
+/* ============================================================
+   ป้ายคำศัพท์ลอยขึ้นตอนอ่านออกเสียง
+   ============================================================ */
+
+.say-label {
+  position: absolute;
+  transform: translate(-8%, 0);
+  background: #fff;
+  color: var(--text);
+  font-family: var(--font-fun);
+  font-weight: 700;
+  font-size: clamp(18px, 4.5vw, 24px);
+  padding: 8px 18px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+  pointer-events: none;
+  z-index: 20;
+  animation: sayUp 1.6s ease-out forwards;
+}
+.say-label .sl-icon { margin-right: 8px; font-size: .9em; }
+
+@keyframes sayUp {
+  0%   { opacity: 0; transform: translate(-8%, 10px) scale(.7); }
+  18%  { opacity: 1; transform: translate(-8%, -14px) scale(1.06); }
+  30%  { transform: translate(-8%, -18px) scale(1); }
+  75%  { opacity: 1; transform: translate(-8%, -46px) scale(1); }
+  100% { opacity: 0; transform: translate(-8%, -70px) scale(.94); }
+}
+
+/* วงแหวนกระเพื่อมตอนกำลังอ่านออกเสียง */
+.speaking { animation: speakPulse .9s ease-out; }
+@keyframes speakPulse {
+  0%   { filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)) drop-shadow(0 0 0 rgba(255,201,60,.9)); }
+  50%  { filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)) drop-shadow(0 0 22px rgba(255,201,60,.95)); }
+  100% { filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)) drop-shadow(0 0 0 rgba(255,201,60,0)); }
+}
