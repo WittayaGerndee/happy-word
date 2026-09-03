@@ -11,8 +11,10 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# ระหว่างพัฒนา: ไม่ cache เพื่อให้เห็นการแก้ไขทันทีหลัง deploy
+# เมื่อเกมนิ่งแล้วค่อยเปลี่ยนเป็น max-age=3600 เพื่อให้โหลดเร็วขึ้น
 /assets/*
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=0, must-revalidate
 
 /data/*
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=0, must-revalidate

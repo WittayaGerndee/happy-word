@@ -506,7 +506,7 @@ Screens.splash = function () {
     if (fsSupported() && window.matchMedia('(pointer: coarse)').matches) enterFullscreen();
     markStreakToday();
     later(function () { sfx.pop(); }, 30);
-    go(P().learnedWords.length === 0 ? 'freeplay' : 'home');
+    go('home');   /* เห็นเมนูก่อนเสมอ — ปุ่มเล่นเพลินอยู่บนสุดและใหญ่ที่สุดอยู่แล้ว */
   });
   wrap.appendChild(b);
   wrap.appendChild(el('p', 'splash-hint', '🔊 อย่าลืมเปิดเสียงนะ'));
@@ -1066,6 +1066,12 @@ if (fsSupported()) {
 
 document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
 window.addEventListener('beforeunload', save);
+
+/* ป้ายเวอร์ชันเล็ก ๆ มุมล่างขวา — ไว้เช็คว่าเบราว์เซอร์โหลดไฟล์ใหม่แล้วจริงไหม */
+var vTag = document.createElement('div');
+vTag.className = 'version-tag';
+vTag.textContent = 'v4';
+document.body.appendChild(vTag);
 
 go('splash', {}, true);
 
