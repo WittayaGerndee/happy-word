@@ -312,6 +312,57 @@ setTimeout(butterfly, 3000);
 })();
 
 /* ============================================================
+   3.5 เต็มหน้าจอ (สำคัญมากบนแท็บเล็ต — กันเด็กกดหลุดออกจากเกม)
+   ============================================================ */
+
+var docEl = document.documentElement;
+
+function fsElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function fsSupported() {
+  return !!(docEl.requestFullscreen || docEl.webkitRequestFullscreen);
+}
+
+function enterFullscreen() {
+  try {
+    var fn = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+    if (fn) {
+      var r = fn.call(docEl);
+      if (r && r.catch) r.catch(function () {});
+    }
+  } catch (e) {}
+}
+
+function exitFullscreen() {
+  try {
+    var fn = document.exitFullscreen || document.webkitExitFullscreen;
+    if (fn) {
+      var r = fn.call(document);
+      if (r && r.catch) r.catch(function () {});
+    }
+  } catch (e) {}
+}
+
+function toggleFullscreen() {
+  if (fsElement()) exitFullscreen(); else enterFullscreen();
+}
+
+function syncFullscreenBtn() {
+  var b = document.getElementById('btnFull');
+  if (!b) return;
+  var on = !!fsElement();
+  document.body.classList.toggle('is-fullscreen', on);
+  b.textContent = on ? '⤡' : '⛶';
+  b.setAttribute('aria-label', on ? 'ออกจากเต็มหน้าจอ' : 'เต็มหน้าจอ');
+}
+
+['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+  document.addEventListener(ev, syncFullscreenBtn);
+});
+
+/* ============================================================
    4. BUNNY  (Concept Part 4.6 + ภาคผนวก B.2)
    ============================================================ */
 
@@ -451,6 +502,8 @@ Screens.splash = function () {
   var b = el('button', 'btn big', '👆 แตะเพื่อเริ่ม');
   b.addEventListener('click', function () {
     unlockAudio();                    /* ต้องอยู่ใน user gesture เท่านั้น */
+    /* แท็บเล็ต/มือถือ: เข้าเต็มจอให้เลย เด็กจะได้ไม่กดโดนแถบเบราว์เซอร์หลุดออกไป */
+    if (fsSupported() && window.matchMedia('(pointer: coarse)').matches) enterFullscreen();
     markStreakToday();
     later(function () { sfx.pop(); }, 30);
     go(P().learnedWords.length === 0 ? 'freeplay' : 'home');
@@ -472,7 +525,8 @@ Screens.home = function () {
 
   var col = el('div', 'btn-col');
   col.appendChild(btn('🎪 เล่นเพลิน', 'big', function () { go('freeplay'); }));
-  col.appendChild(btn('🎮 เล่นเกม', 'accent', function () { go('learn'); }));
+  col.appendChild(btn('🎮 เล่นเกมทายรูป', 'accent', function () { go('learn'); }));
+  col.appendChild(btn('🃏 จับคู่ภาพสัตว์', 'accent', function () { go('memory'); }));
   col.appendChild(btn('🏡 สวนสัตว์ของหนู', 'calm', function () { go('zoo'); }));
   wrap.appendChild(col);
   app.appendChild(wrap);
@@ -784,7 +838,7 @@ Screens.result = function (params) {
 
   var col = el('div', 'btn-col');
   col.appendChild(btn('🏡 ไปดูสวนสัตว์', 'accent', function () { go('zoo'); }));
-  col.appendChild(btn('🔁 เล่นอีกรอบ', '', function () { go('learn'); }));
+  col.appendChild(btn('🃏 จับคู่ภาพสัตว์', '', function () { go('memory'); }));
   col.appendChild(btn('🎪 เล่นเพลิน', 'calm', function () { go('freeplay'); }));
   wrap.appendChild(col);
   app.appendChild(wrap);
@@ -806,6 +860,151 @@ Screens.result = function (params) {
   }, 500 + total * 240);
 
   announce('ได้ดาว ' + total + ' ดวง');
+};
+
+/* ============================================================
+   12.5 หน้าจอ: จับคู่ภาพสัตว์ (Memory Match)
+   ------------------------------------------------------------
+   - ไม่มีเวลาจับ ไม่มีจำนวนครั้งจำกัด เปิดผิดกี่ครั้งก็ได้
+   - เปิดการ์ดทุกใบจะอ่านออกเสียงชื่อสัตว์เป็นภาษาอังกฤษ
+   - เริ่มที่ 3 คู่ แล้วค่อย ๆ เพิ่มเป็น 4, 5, 6 คู่
+   ============================================================ */
+
+Screens.memory = function (params) {
+  var pairs = Math.min(Math.max(params.pairs || 3, 2), 6);
+  var picked = pickWords(pairs);
+
+  /* สร้างสำรับ: สัตว์ตัวละ 2 ใบ แล้วสับ */
+  var deck = [];
+  picked.forEach(function (w) {
+    deck.push({ w: w, key: w.id + '-a' });
+    deck.push({ w: w, key: w.id + '-b' });
+  });
+  deck = shuffle(deck);
+
+  var wrap = el('div');
+  wrap.appendChild(el('div', 'bunny', '🐰'));
+  wrap.appendChild(el('div', 'bubble', 'หาสัตว์ที่เหมือนกันนะ!'));
+
+  var grid = el('div', 'memory-grid ' + (pairs <= 3 ? 'cols-3' : 'cols-4'));
+  wrap.appendChild(grid);
+
+  var prog = el('div', 'memory-progress');
+  for (var i = 0; i < pairs; i++) prog.appendChild(el('span', 'mp-heart', '💛'));
+  wrap.appendChild(prog);
+
+  app.appendChild(wrap);
+
+  var first = null;
+  var lock = false;
+  var found = 0;
+
+  deck.forEach(function (card) {
+    var b = el('button', 'mcard',
+      '<span class="mc-inner">' +
+        '<span class="mc-face mc-back">🐾</span>' +
+        '<span class="mc-face mc-front">' + card.w.emoji + '</span>' +
+      '</span>');
+    b.setAttribute('aria-label', 'การ์ดคว่ำ');
+    b.dataset.id = card.w.id;
+    b.card = card;
+    b.addEventListener('click', function () { flip(b); });
+    grid.appendChild(b);
+  });
+
+  function flip(b) {
+    if (lock) return;
+    if (b.classList.contains('open') || b.classList.contains('matched')) {
+      /* แตะการ์ดที่เปิดอยู่แล้ว = อยากฟังชื่อซ้ำ ให้ฟังได้เลย */
+      sfx.pop();
+      speak(b.card.w.english);
+      return;
+    }
+
+    sfx.pop();
+    b.classList.add('open');
+    b.setAttribute('aria-label', b.card.w.english);
+    speak(b.card.w.english);          /* อ่านออกเสียงทุกครั้งที่เปิดการ์ด */
+
+    if (!first) { first = b; return; }
+
+    if (first.dataset.id === b.dataset.id) {
+      /* เจอคู่แล้ว */
+      lock = true;
+      var a = first;
+      first = null;
+      later(function () {
+        a.classList.add('matched');
+        b.classList.add('matched');
+        a.classList.remove('open');
+        b.classList.remove('open');
+        sfx.yay();
+        confettiFrom(b, 28);
+        bunnyEmote('excited');
+        setBubble('เจอแล้ว! ' + b.card.w.english);
+        addStars(1);
+        later(function () { sfx.ting(); }, 200);
+
+        found++;
+        var hearts = prog.querySelectorAll('.mp-heart');
+        if (hearts[found - 1]) hearts[found - 1].classList.add('on');
+        announce('เจอคู่ ' + b.card.w.english);
+
+        lock = false;
+        if (found === pairs) later(finish, 900);
+      }, 620);
+      return;
+    }
+
+    /* ยังไม่ใช่คู่ — คว่ำกลับเบา ๆ ไม่มีการลงโทษ ไม่มีเสียงลบ */
+    lock = true;
+    var a2 = first;
+    first = null;
+    later(function () {
+      a2.classList.add('nomatch');
+      b.classList.add('nomatch');
+      sfx.gentle();
+      setBubble('ยังไม่ใช่คู่ ลองใหม่นะ');
+    }, 700);
+    later(function () {
+      [a2, b].forEach(function (n) {
+        n.classList.remove('open', 'nomatch');
+        n.setAttribute('aria-label', 'การ์ดคว่ำ');
+      });
+      lock = false;
+    }, 1500);
+  }
+
+  function finish() {
+    addStars(2);
+    sfx.fanfare();
+    confetti(window.innerWidth / 2, window.innerHeight * 0.35, 70);
+    speak('Great job!', { rate: 0.9 });
+
+    /* ปลดล็อกสัตว์ที่เจอในเกมนี้เข้าสวนสัตว์ */
+    picked.forEach(function (w) {
+      if (P().unlockedAnimals.indexOf(w.id) < 0) P().unlockedAnimals.push(w.id);
+    });
+    save();
+
+    var box = el('div', 'new-animal');
+    box.appendChild(el('div', 'title', '🎉 เก่งมาก!'));
+    box.appendChild(el('div', 'word-th', 'จับคู่ครบทุกคู่แล้ว'));
+    wrap.appendChild(box);
+
+    var col = el('div', 'btn-col');
+    col.style.marginTop = '16px';
+    col.appendChild(btn(
+      pairs < 6 ? '➕ ลองแบบยากขึ้น' : '🔁 เล่นอีกรอบ',
+      'accent',
+      function () { go('memory', { pairs: pairs < 6 ? pairs + 1 : pairs }); }
+    ));
+    col.appendChild(btn('🔁 เล่นระดับเดิมอีก', '', function () { go('memory', { pairs: pairs }); }));
+    col.appendChild(btn('🏡 ไปดูสวนสัตว์', 'calm', function () { go('zoo'); }));
+    wrap.appendChild(col);
+
+    grid.style.opacity = '.55';
+  }
 };
 
 /* ============================================================
@@ -857,6 +1056,13 @@ document.getElementById('btnHome').addEventListener('click', function () {
   sfx.pop();
   go('home');
 });
+
+var fullBtn = document.getElementById('btnFull');
+if (fsSupported()) {
+  fullBtn.hidden = false;
+  fullBtn.addEventListener('click', function () { sfx.pop(); toggleFullscreen(); });
+  syncFullscreenBtn();
+}
 
 document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
 window.addEventListener('beforeunload', save);

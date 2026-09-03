@@ -490,3 +490,104 @@ body.night .ground { background: linear-gradient(180deg, #5C8A52 0%, #3F6438 100
   50%  { filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)) drop-shadow(0 0 22px rgba(255,201,60,.95)); }
   100% { filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)) drop-shadow(0 0 0 rgba(255,201,60,0)); }
 }
+
+/* ============================================================
+   ปุ่มเต็มหน้าจอ
+   ============================================================ */
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+#btnFull { font-size: 30px; }
+body.is-fullscreen #btnFull { background: var(--primary); }
+
+/* ============================================================
+   เกมจับคู่ภาพสัตว์ (Memory Match)
+   ============================================================ */
+
+.memory-grid {
+  display: grid;
+  gap: clamp(10px, 2.4vw, 20px);
+  width: min(620px, 100%);
+  margin: 18px auto 0;
+}
+@media (min-width: 700px) {
+  .memory-grid { width: min(700px, 100%); gap: 22px; }
+}
+.memory-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.memory-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.mcard {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  perspective: 800px;
+  min-height: 84px;
+}
+.mcard:focus-visible { outline: 5px solid var(--accent); outline-offset: 5px; border-radius: 26px; }
+
+.mc-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform .45s var(--ease-bounce);
+}
+.mcard.open .mc-inner,
+.mcard.matched .mc-inner { transform: rotateY(180deg); }
+
+.mc-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 26px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 6px 16px rgba(0,0,0,.14);
+}
+
+.mc-back {
+  background: linear-gradient(160deg, var(--primary) 0%, #FFB020 100%);
+  border-bottom: 6px solid var(--primary-dark);
+  font-size: clamp(34px, 8vw, 52px);
+}
+.mc-front {
+  background: var(--bg-cream);
+  border-bottom: 6px solid #E0D5C2;
+  transform: rotateY(180deg);
+  font-size: clamp(42px, 11vw, 74px);
+}
+
+.mcard:active .mc-inner { transform: scale(.95); }
+.mcard.open:active .mc-inner,
+.mcard.matched:active .mc-inner { transform: rotateY(180deg) scale(.95); }
+
+.mcard.matched .mc-front {
+  border-bottom-color: var(--success);
+  background: #EFFBEA;
+  animation: matchPop .6s var(--ease-bounce);
+}
+@keyframes matchPop {
+  0% { transform: rotateY(180deg) scale(1); }
+  45% { transform: rotateY(180deg) scale(1.16); }
+  100% { transform: rotateY(180deg) scale(1); }
+}
+
+.mcard.nomatch .mc-front {
+  animation: nomatchWobble .5s ease-in-out;
+  border-bottom-color: var(--gentle);
+}
+@keyframes nomatchWobble {
+  0%,100% { transform: rotateY(180deg) rotate(0); }
+  30%     { transform: rotateY(180deg) rotate(-5deg); }
+  70%     { transform: rotateY(180deg) rotate(5deg); }
+}
+
+.memory-progress {
+  display: flex; gap: 10px; justify-content: center; margin-top: 18px;
+}
+.mp-heart { font-size: 26px; opacity: .28; transition: opacity .3s, transform .3s; }
+.mp-heart.on { opacity: 1; transform: scale(1.15); }
