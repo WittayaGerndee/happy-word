@@ -1,0 +1,362 @@
+/* ============================================================
+   games.css — สไตล์ของเกมเสริมทั้งหมด (assets/js/games/*.js)
+   ยึดตัวแปรสีและระยะจาก style.css ทั้งหมด
+   กติกาที่ยึดตาม Concept v2:
+     - ปุ่ม/เป้าหมายที่ต้องแตะ ≥ 96px, ระยะห่าง ≥ 20px
+     - ไม่มีสีแดงบอกผิด ใช้ --gentle (ม่วง) แทน
+   ============================================================ */
+
+/* ---------- หน้าเลือกเกม ---------- */
+
+.games-wrap {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 20px;
+}
+.games-wrap .title { margin-bottom: 6px; }
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  width: min(880px, 100%);
+  margin: 18px auto 0;
+}
+
+.game-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+  min-height: 132px;
+  padding: 14px 10px 12px;
+  border: none;
+  border-bottom: 6px solid #E3D9C6;
+  border-radius: var(--r);
+  background: #fff;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  transition: transform var(--dur-fast);
+}
+.game-card:active { transform: translateY(4px); border-bottom-width: 3px; }
+.game-card:focus-visible { outline: 5px solid var(--accent); outline-offset: 4px; }
+.gc-icon  { font-size: 46px; line-height: 1.1; }
+.gc-name  { font-size: 19px; font-weight: 700; }
+.gc-skill { font-size: 14px; color: var(--text-soft); }
+
+/* ---------- โครงร่วมของเกม ---------- */
+
+.g-wrap {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px;
+}
+.g-prompt {
+  font-size: clamp(24px, 5.4vw, 34px);
+  font-weight: 700;
+  background: rgba(255,255,255,.9);
+  border-radius: 999px;
+  padding: 10px 26px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.g-prompt .g-say {
+  border: none; background: none; font-size: 30px; cursor: pointer; padding: 0 2px;
+}
+.g-stage {
+  position: relative;
+  flex: 1;
+  width: min(900px, 100%);
+  min-height: 0;
+}
+.g-dots { display: flex; gap: 10px; justify-content: center; padding-bottom: 6px; }
+.g-dots .d {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(255,255,255,.7);
+}
+.g-dots .d.on   { background: var(--primary); transform: scale(1.25); }
+.g-dots .d.done { background: var(--success); }
+
+/* ของชิ้นที่แตะได้ (ใหญ่พอสำหรับนิ้วเด็ก) */
+.g-tile {
+  min-width: 104px; min-height: 104px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: clamp(46px, 11vw, 68px);
+  line-height: 1;
+  border: none;
+  border-bottom: 6px solid #E3D9C6;
+  border-radius: 26px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,.08);
+  transition: transform var(--dur-fast), opacity var(--dur-fast);
+}
+.g-tile:active { transform: translateY(4px); border-bottom-width: 3px; }
+.g-tile:focus-visible { outline: 5px solid var(--accent); outline-offset: 4px; }
+.g-tile.ok   { border-bottom-color: var(--success); animation: rightPop .6s var(--ease-bounce); }
+.g-tile.soft { animation: shake .45s; border-bottom-color: var(--gentle); }
+.g-tile.gone { opacity: .16; pointer-events: none; transform: scale(.86); }
+.g-tile.point { animation: pointAt 1s ease-in-out infinite; }
+
+@keyframes pointAt {
+  0%,100% { transform: translateY(0)   scale(1); }
+  50%     { transform: translateY(-12px) scale(1.06); }
+}
+
+/* ---------- แถวของที่วางเรียง ---------- */
+.g-row {
+  display: flex; flex-wrap: wrap; gap: 20px;
+  align-items: center; justify-content: center;
+  width: 100%;
+}
+
+/* ---------- ระบบลาก (dragkit) ---------- */
+.g-drag { touch-action: none; cursor: grab; }
+.g-drag.dragging {
+  cursor: grabbing;
+  z-index: 60;
+  transform: scale(1.14) rotate(-3deg);
+  filter: drop-shadow(0 12px 18px rgba(0,0,0,.28));
+  transition: none;
+}
+.g-slot {
+  min-width: 112px; min-height: 112px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(44px, 10vw, 64px);
+  border-radius: 26px;
+  border: 5px dashed rgba(255,255,255,.95);
+  background: rgba(255,255,255,.35);
+  transition: transform var(--dur-fast), background var(--dur-fast);
+}
+.g-slot.hot {
+  transform: scale(1.12);
+  background: rgba(255,255,255,.75);
+  border-color: var(--primary);
+}
+.g-slot.filled {
+  border-style: solid;
+  border-color: var(--success);
+  background: rgba(255,255,255,.9);
+}
+
+/* ---------- เกมสี ---------- */
+.color-chip {
+  width: 92px; height: 92px; border-radius: 50%;
+  border: 6px solid #fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,.18);
+  display: inline-block;
+}
+.g-tile.tinted {
+  background: var(--tint);
+  border-bottom-color: rgba(0,0,0,.18);
+}
+
+/* ---------- เกมนับ ---------- */
+.count-field {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  align-items: center; justify-content: center;
+  background: rgba(255,255,255,.55);
+  border-radius: var(--r);
+  padding: 18px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  min-height: 150px;
+}
+.count-item {
+  font-size: clamp(40px, 9vw, 60px);
+  line-height: 1;
+  animation: bob 3.4s ease-in-out infinite;
+}
+.count-item.counted { animation: aJump .5s var(--ease-bounce); }
+.num-tile { font-size: clamp(40px, 9vw, 56px); font-weight: 700; }
+
+/* ---------- ลูกโป่ง / เก็บดาว ---------- */
+.g-float {
+  position: absolute;
+  display: flex; align-items: center; justify-content: center;
+  width: 108px; height: 108px;
+  font-size: 76px; line-height: 1;
+  border: none; background: none; padding: 0;
+  cursor: pointer;
+}
+.g-float .lab {
+  position: absolute;
+  font-size: 30px; font-weight: 700; color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,.45);
+  transform: translateY(-6px);
+}
+.g-float.popped { animation: popOut .45s ease-out forwards; pointer-events: none; }
+@keyframes popOut {
+  to { transform: scale(1.8); opacity: 0; }
+}
+.g-float.wiggleY { animation: floatY 3s ease-in-out infinite; }
+@keyframes floatY {
+  0%,100% { margin-top: 0; } 50% { margin-top: -14px; }
+}
+
+/* ---------- เกมต่อภาพ (จิ๊กซอว์) ---------- */
+.puz-board {
+  position: relative;
+  margin: 0 auto;
+  border-radius: 26px;
+  background: rgba(255,255,255,.5);
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,.9);
+  overflow: hidden;
+}
+.puz-cell {
+  position: absolute;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.75);
+}
+.puz-cell .pc-art {
+  position: absolute;
+  line-height: 1;
+  font-size: var(--puz-size);
+}
+.puz-cell.ghost { opacity: .18; }
+.puz-cell.hot   { background: rgba(255,255,255,.75); }
+.puz-tray {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  justify-content: center; align-items: center;
+  min-height: 110px;
+}
+.puz-piece {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,.16);
+}
+.puz-piece .pc-art { position: absolute; line-height: 1; font-size: var(--puz-size); }
+.puz-piece.placed { visibility: hidden; }
+
+/* ---------- เขาวงกต ---------- */
+.maze-board {
+  position: relative;
+  margin: 0 auto;
+  background: rgba(255,255,255,.45);
+  border-radius: 22px;
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,.9);
+}
+.maze-wall {
+  position: absolute;
+  background: #8FBF6A;
+  border-radius: 8px;
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,.08);
+}
+.maze-goal, .maze-hero {
+  position: absolute;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.maze-goal { font-size: 40px; animation: bob 3s ease-in-out infinite; }
+.maze-hero { font-size: 40px; z-index: 5; touch-action: none; cursor: grab; }
+.maze-hero.dragging { transform: scale(1.2); filter: drop-shadow(0 8px 12px rgba(0,0,0,.3)); }
+.maze-carrot { position: absolute; font-size: 26px; }
+.maze-carrot.eaten { animation: popOut .4s ease-out forwards; }
+
+/* ---------- ให้อาหารปลา ---------- */
+.pond {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  flex: 1; min-height: 220px;
+  border-radius: 32px;
+  background: linear-gradient(180deg, #BFEFFF 0%, #86D6F5 100%);
+  box-shadow: inset 0 0 0 6px rgba(255,255,255,.85);
+  overflow: hidden;
+}
+.fish {
+  position: absolute;
+  font-size: 66px; line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.15));
+  transition: transform .3s;
+}
+.fish .fbadge {
+  position: absolute; right: -6px; top: -6px;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 4px solid #fff;
+}
+.fish.fed { animation: aJump .6s var(--ease-bounce); }
+.fish.hot { transform: scale(1.14); }
+.food-bar {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+  padding: 8px 0 4px;
+}
+
+/* ---------- ลานจอดรถ ---------- */
+.park-lot {
+  display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
+}
+.park-slot {
+  width: 118px; height: 118px;
+  border-radius: 22px;
+  border: 6px dashed #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 56px;
+  transition: transform var(--dur-fast);
+}
+.park-slot.hot { transform: scale(1.1); border-style: solid; }
+.park-slot.filled { border-style: solid; }
+
+/* ---------- จำอะไรหายไป ---------- */
+.miss-row {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+  min-height: 130px; align-items: center;
+}
+.miss-item {
+  font-size: clamp(48px, 11vw, 70px); line-height: 1;
+  transition: opacity .3s, transform .3s;
+}
+.miss-item.hidden { opacity: 0; transform: scale(.4); }
+.miss-cover {
+  font-size: clamp(48px, 11vw, 70px);
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+@media (max-width: 420px) {
+  .game-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .game-card { min-height: 118px; }
+  .gc-icon { font-size: 38px; }
+  .gc-name { font-size: 17px; }
+}
+
+/* ---------- ลูกโป่งวาดด้วย CSS (emoji 🎈 เปลี่ยนสีไม่ได้) ---------- */
+.balloon {
+  position: relative;
+  width: 88px; height: 106px;
+  border-radius: 50% 50% 50% 50% / 56% 56% 44% 44%;
+  background: var(--bcol, #E8453C);
+  box-shadow: inset -10px -14px 0 rgba(0,0,0,.08), 0 8px 16px rgba(0,0,0,.16);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 40px; font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,.28);
+}
+.balloon::after {          /* ปมผูกลูกโป่ง */
+  content: '';
+  position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid var(--bcol, #E8453C);
+}
+.balloon .shine {
+  position: absolute; left: 18px; top: 16px;
+  width: 20px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,.55);
+}
+
+/* ปลาที่กำลังหิว — ให้เห็นชัดว่าเป็นตัวไหน */
+.fish.hungry {
+  outline: 6px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 10px rgba(255,255,255,.35), 0 6px 14px rgba(0,0,0,.2);
+}
+.fish .hint-bubble {
+  position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+  font-size: 26px;
+}
+
+/* จัดเนื้อหาเกมให้อยู่กลางจอในแนวตั้ง */
+.g-wrap { justify-content: center; }

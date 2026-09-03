@@ -525,8 +525,7 @@ Screens.home = function () {
 
   var col = el('div', 'btn-col');
   col.appendChild(btn('🎪 เล่นเพลิน', 'big', function () { go('freeplay'); }));
-  col.appendChild(btn('🎮 เล่นเกมทายรูป', 'accent', function () { go('learn'); }));
-  col.appendChild(btn('🃏 จับคู่ภาพสัตว์', 'accent', function () { go('memory'); }));
+  col.appendChild(btn('🎯 เลือกเกม', 'accent', function () { go('games'); }));
   col.appendChild(btn('🏡 สวนสัตว์ของหนู', 'calm', function () { go('zoo'); }));
   wrap.appendChild(col);
   app.appendChild(wrap);
@@ -1070,8 +1069,42 @@ window.addEventListener('beforeunload', save);
 /* ป้ายเวอร์ชันเล็ก ๆ มุมล่างขวา — ไว้เช็คว่าเบราว์เซอร์โหลดไฟล์ใหม่แล้วจริงไหม */
 var vTag = document.createElement('div');
 vTag.className = 'version-tag';
-vTag.textContent = 'v4';
+vTag.textContent = 'v5';
 document.body.appendChild(vTag);
+
+/* ============================================================
+   15. เปิด API ให้ไฟล์เกมเสริมใน assets/js/games/*.js เรียกใช้
+   ------------------------------------------------------------
+   ทำไมต้องมี? เพราะ app.js เป็น IIFE ตัวช่วยข้างในจึงเป็น private
+   การส่งออกเป็นชุดเดียวทำให้เพิ่มเกมใหม่ได้โดยไม่ต้องแตะ app.js อีก
+   ============================================================ */
+window.HWA = {
+  el: el, btn: btn, go: go, Screens: Screens, app: app,
+  speak: speak, pulse: pulse, sayLabel: sayLabel, sfx: sfx, tone: tone,
+  confetti: confetti, confettiFrom: confettiFrom, butterfly: butterfly,
+  bunnySay: bunnySay, setBubble: setBubble, bunnyEmote: bunnyEmote,
+  shuffle: shuffle, later: later, clearTimers: clearTimers, announce: announce,
+  addStars: addStars, save: save, profile: P, wordRec: wordRec,
+  pickWords: pickWords, thaiFor: thaiFor, data: D,
+  rnd: function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); },
+  /* กล่องสรุปท้ายเกม — ทุกเกมใช้หน้าตาเดียวกัน เด็กจะได้คุ้นเคย */
+  finishBox: function (wrap, opts) {
+    opts = opts || {};
+    sfx.fanfare();
+    confetti(window.innerWidth / 2, window.innerHeight * 0.35, 70);
+    speak(opts.say || 'Great job!', { rate: 0.9 });
+    var box = el('div', 'new-animal');
+    box.appendChild(el('div', 'title', '🎉 ' + (opts.title || 'เก่งมาก!')));
+    if (opts.sub) box.appendChild(el('div', 'word-th', opts.sub));
+    wrap.appendChild(box);
+    var col = el('div', 'btn-col');
+    col.style.marginTop = '16px';
+    if (opts.next) col.appendChild(btn(opts.nextLabel || '➕ เล่นต่อ', 'accent', opts.next));
+    if (opts.again) col.appendChild(btn('🔁 เล่นอีกรอบ', '', opts.again));
+    col.appendChild(btn('🎯 เลือกเกมอื่น', 'calm', function () { go('games'); }));
+    wrap.appendChild(col);
+  }
+};
 
 go('splash', {}, true);
 
