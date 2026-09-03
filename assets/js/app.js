@@ -452,6 +452,8 @@ Screens.freeplay = function () {
   var list = shuffle(D.words).concat(bonus);
 
   var cols = window.innerWidth < 560 ? 3 : 4;
+  var rows = Math.ceil(list.length / cols);
+  var rowGap = rows > 1 ? (84 / (rows - 1)) : 0;
   var taps = 0, invited = false;
 
   list.forEach(function (w, i) {
@@ -459,7 +461,7 @@ Screens.freeplay = function () {
     b.setAttribute('aria-label', w.english + ' ' + w.thai);
     var r = (i / cols) | 0, c = i % cols;
     b.style.left = (5 + c * (86 / cols) + (Math.random() * 6 - 3)) + '%';
-    b.style.top  = (3 + r * 25 + (Math.random() * 8 - 4)) + '%';
+    b.style.top  = (4 + r * rowGap + (Math.random() * 5 - 2.5)) + '%';
     b.style.animationDelay = (Math.random() * 3) + 's';
 
     b.addEventListener('click', function () {

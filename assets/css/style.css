@@ -117,7 +117,7 @@ body.night .ground { background: linear-gradient(180deg, #5C8A52 0%, #3F6438 100
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 84px 20px 28px;
+  padding: 112px 20px 28px;
   text-align: center;
   transition: opacity var(--dur-normal), transform var(--dur-normal);
 }
@@ -218,7 +218,7 @@ body.night .ground { background: linear-gradient(180deg, #5C8A52 0%, #3F6438 100
 .bubble {
   position: relative;
   display: inline-block;
-  max-width: 340px;
+  max-width: min(340px, 74vw);
   background: #fff;
   border-radius: 24px;
   padding: 16px 24px;
@@ -427,8 +427,14 @@ body.night .ground { background: linear-gradient(180deg, #5C8A52 0%, #3F6438 100
 
 /* ---------- แนวนอนบนจอเตี้ย ---------- */
 
+@media (min-width: 700px) {
+  .choice { min-width: 158px; padding: 22px 20px 16px; }
+  .choice .cw { font-size: 24px; }
+  .choices { gap: 24px; }
+}
+
 @media (orientation: landscape) and (max-height: 520px) {
-  #app { padding-top: 74px; }
+  #app { padding-top: 92px; }
   .bunny { font-size: 62px; }
   .emoji-art { font-size: 84px; }
   .word-en { font-size: 32px; }
