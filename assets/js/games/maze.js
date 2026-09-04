@@ -114,6 +114,8 @@ H.Screens.maze = function (params) {
       H.addStars(1);
       H.setBubble('อร่อยจัง! Carrot');
       H.speak('Carrot');
+      var carrotWord = window.HWA_PACKS.veggies.words.filter(function (x) { return x.id === 'carrot'; })[0];
+      if (carrotWord) H.collect(carrotWord);
     }
     if (r === M.goal[0] && c === M.goal[1]) win();
   }

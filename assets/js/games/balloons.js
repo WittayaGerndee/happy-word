@@ -100,9 +100,10 @@ H.Screens.balloons = function (params) {
     ended = true;
     Object.keys(nodes).forEach(function (k) { nodes[k].remove(); });
     H.bunnyEmote('excited');
+    var prize = H.surprise ? H.surprise() : null;
     H.finishBox(wrap, {
       title: 'นับ 1 ถึง ' + max + ' ได้แล้ว!',
-      sub: 'เรียงตัวเลขถูกทุกอัน',
+      sub: prize ? ('ได้ ' + prize.emoji + ' ' + prize.english + ' เข้าคลังด้วย!') : 'เรียงตัวเลขถูกทุกอัน',
       next: max < 10 ? function () { H.go('balloons', { max: max + 1 }); } : null,
       nextLabel: '➕ เพิ่มเป็น ' + (max + 1),
       again: function () { H.go('balloons', { max: max }); }

@@ -1,13 +1,13 @@
 /* ============================================================
    🐠 ให้อาหารปลา — เลือกอาหารให้ตรงกับปลาที่หิว
-   ทักษะ: การจำแนก (จับคู่สีอาหารกับสีปลา) + ชื่อสีภาษาอังกฤษ
+   ทักษะ: การจำแนก (จับคู่สีอาหารกับสีปลา) + ชื่อสัตว์ทะเลภาษาอังกฤษ
+   ให้อาหารถูกตัว = ปลาตัวนั้นเข้า "ตู้ปลาของหนู"
    No-Fail: เลือกผิด ปลาแค่ส่ายหัว แล้ว Bunny ใบ้ให้
    ============================================================ */
 (function () {
 'use strict';
 var H = window.HWA, PK = window.HWA_PACKS;
 var ROUNDS = 5;
-var FISH = ['🐠', '🐟', '🐡', '🐙', '🦑', '🐳'];
 
 H.Screens.feedfish = function (params) {
   var el = H.el;
@@ -17,16 +17,20 @@ H.Screens.feedfish = function (params) {
   var palette = H.shuffle(PK.colors.filter(function (c) {
     return ['red', 'yellow', 'blue', 'green', 'orange', 'purple', 'pink'].indexOf(c.id) >= 0;
   })).slice(0, 3);
-  var hungry = palette[0];
-  var shapes = H.shuffle(FISH).slice(0, 3);
+  var creatures = window.HWA_pick(3, ['sea']);
+  var pairs = palette.map(function (c, i) { return { color: c, word: creatures[i] }; });
+  var hungryPair = pairs[0];
+  var hungry = hungryPair.color;
 
   var wrap = el('div', 'g-wrap');
 
   var prompt = el('div', 'g-prompt');
-  prompt.appendChild(el('span', '', 'ปลา' + hungry.thai + 'หิวแล้ว!'));
+  prompt.appendChild(el('span', '', hungryPair.word.thai + 'สี' + hungry.thai.replace('สี', '') + 'หิวแล้ว!'));
   var say = el('button', 'g-say', '🔊');
   say.setAttribute('aria-label', 'ฟังอีกครั้ง');
-  say.addEventListener('click', function () { H.sfx.pop(); H.speak(hungry.english); });
+  say.addEventListener('click', function () {
+    H.sfx.pop(); H.speak(hungry.english + ' ' + hungryPair.word.english + '.', { rate: 0.75 });
+  });
   prompt.appendChild(say);
   wrap.appendChild(prompt);
 
@@ -45,15 +49,16 @@ H.Screens.feedfish = function (params) {
 
   /* ---- วางปลา ---- */
   var fishNodes = {};
-  H.shuffle(palette).forEach(function (c, idx) {
-    var f = el('div', 'fish', shapes[idx]);
+  H.shuffle(pairs).forEach(function (pr, idx) {
+    var c = pr.color, w = pr.word;
+    var f = el('div', 'fish', w.emoji);
     f.style.background = c.hex;
     f.style.borderRadius = '50%';
     f.style.padding = '10px 14px';
     f.style.boxShadow = '0 6px 14px rgba(0,0,0,.18)';
     f.style.left = (8 + idx * 30) + '%';
     f.style.top  = (14 + (idx % 2) * 34) + '%';
-    f.setAttribute('aria-label', 'ปลา' + c.thai);
+    f.setAttribute('aria-label', w.english + ' สี' + c.thai);
     f.dataset.color = c.id;
     if (c.id === hungry.id) {
       f.classList.add('hot', 'hungry');
@@ -61,7 +66,7 @@ H.Screens.feedfish = function (params) {
       f.appendChild(el('span', 'hint-bubble', '💭'));
     }
     f.addEventListener('click', function () {
-      H.sfx.pop(); H.speak(c.english);
+      H.sfx.pop(); H.speak(w.english);
       f.classList.remove('fed'); void f.offsetWidth; f.classList.add('fed');
     });
     pond.appendChild(f);
@@ -71,9 +76,8 @@ H.Screens.feedfish = function (params) {
   /* ---- อาหาร ---- */
   var tries = 0, done = false;
   H.shuffle(palette).forEach(function (c) {
-    var b = el('button', 'g-tile', '');
+    var b = el('button', 'g-tile tinted', '');
     b.style.setProperty('--tint', c.hex);
-    b.classList.add('tinted');
     b.dataset.color = c.id;
     b.setAttribute('aria-label', 'อาหาร' + c.thai);
     var chip = el('span', '', '🍚');
@@ -84,7 +88,9 @@ H.Screens.feedfish = function (params) {
   });
 
   H.announce('เลือกอาหารสี' + hungry.thai);
-  H.later(function () { H.speak(hungry.english, { rate: 0.8 }); }, 380);
+  H.later(function () {
+    H.speak(hungry.english + ' ' + hungryPair.word.english + '.', { rate: 0.75 });
+  }, 380);
 
   function pick(c, node) {
     if (done) return;
@@ -98,11 +104,11 @@ H.Screens.feedfish = function (params) {
       f.classList.add('fed');
       f.textContent = '😋';
       H.bunnyEmote('excited');
-      H.setBubble('อิ่มแล้ว! ' + hungry.english);
-      H.speak(hungry.english + ' fish. Yummy!', { rate: 0.78 });
+      H.setBubble('อิ่มแล้ว! ' + hungryPair.word.english);
+      H.speak(hungryPair.word.english + '. Yummy!', { rate: 0.78 });
       H.addStars(1);
-      H.later(function () { H.sfx.ting(); }, 220);
-      H.later(function () { H.go('feedfish', { round: round + 1 }); }, 2000);
+      H.collect(hungryPair.word);            /* ปลาตัวนี้ว่ายเข้าตู้ปลาของหนู */
+      H.later(function () { H.go('feedfish', { round: round + 1 }); }, 2300);
       return;
     }
 
@@ -112,7 +118,7 @@ H.Screens.feedfish = function (params) {
     H.speak(c.english);
 
     if (tries === 1) {
-      H.setBubble('ปลาตัวที่เด้งอยู่หิวนะ ดูสีของมันสิ');
+      H.setBubble('ตัวที่เด้งอยู่หิวนะ ดูสีของมันสิ');
     } else if (tries === 2) {
       H.setBubble(H.bunnySay('hint'));
       var wrongs = Array.prototype.filter.call(foods.children, function (x) {
@@ -135,7 +141,7 @@ H.Screens.feedfish = function (params) {
     H.addStars(2);
     H.finishBox(w2, {
       title: 'ปลาอิ่มทุกตัวแล้ว!',
-      sub: 'ให้อาหารครบ ' + ROUNDS + ' ตัว',
+      sub: 'ไปดูตู้ปลาของหนูได้เลย 🐠',
       again: function () { H.go('feedfish', { round: 0 }); }
     });
   }

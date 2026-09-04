@@ -2,9 +2,9 @@
    🧩 ต่อภาพสัตว์ — ลากชิ้นส่วนไปต่อให้เป็นภาพเต็ม
    ทักษะ: การคิดเชิงพื้นที่
    ------------------------------------------------------------
-   วิธีทำภาพ: ใช้ emoji ตัวเดียวขนาดใหญ่ แล้ว "ครอบ" ให้เห็นทีละส่วน
-   (แต่ละช่องคือหน้าต่างเล็ก ๆ ที่เลื่อนภาพใหญ่ไปคนละตำแหน่ง)
-   จึงไม่ต้องมีไฟล์ภาพเลย และใช้ได้กับทุกคำในคลัง
+   ใช้ภาพจริงจาก assets/img (ตัดมาจากโปสเตอร์ใน uploads/)
+   แต่ละชิ้นคือ "หน้าต่าง" เล็ก ๆ ที่เลื่อน background ของภาพเดียวกัน
+   ไปคนละตำแหน่ง จึงไม่ต้องตัดไฟล์ภาพเพิ่มเลย
    ============================================================ */
 (function () {
 'use strict';
@@ -15,7 +15,8 @@ H.Screens.puzzle = function (params) {
   var el = H.el;
   var lv = Math.min(params.lv || 0, LEVELS.length - 1);
   var R = LEVELS[lv].r, C = LEVELS[lv].c;
-  var w = window.HWA_pick(1, ['animals'])[0] || H.data.words[0];
+  var w = window.HWA_pickImg(1, ['animals'])[0] || H.data.words[0];
+  var src = w.img ? 'assets/img/' + w.img + '.png?v=6' : '';
 
   /* ขนาดกระดานให้พอดีจอ แต่ไม่ใหญ่เกินจนชิ้นส่วนล้น */
   var S = Math.min(300, Math.max(200, Math.min(window.innerWidth - 60, window.innerHeight - 380)));
@@ -41,17 +42,26 @@ H.Screens.puzzle = function (params) {
   wrap.appendChild(tray);
   H.app.appendChild(wrap);
 
-  /* วาดชิ้นส่วนหนึ่งชิ้น (ทั้งบนกระดานและในถาด ใช้ตัวเดียวกัน) */
+  /* วาดชิ้นส่วนหนึ่งชิ้น (ใช้ทั้งบนกระดานและในถาด) */
   function art(r, c) {
-    var a = el('span', 'pc-art', w.emoji);
-    a.style.width = S + 'px';
-    a.style.height = S + 'px';
-    a.style.fontSize = Math.floor(S * 0.82) + 'px';
-    a.style.display = 'flex';
-    a.style.alignItems = 'center';
-    a.style.justifyContent = 'center';
+    var a = el('div', 'pc-art');
+    a.style.position = 'absolute';
+    a.style.width = (cw * C) + 'px';
+    a.style.height = (ch * R) + 'px';
     a.style.left = (-c * cw) + 'px';
     a.style.top = (-r * ch) + 'px';
+    if (src) {
+      a.style.backgroundImage = 'url(' + src + ')';
+      a.style.backgroundSize = 'contain';
+      a.style.backgroundPosition = 'center';
+      a.style.backgroundRepeat = 'no-repeat';
+    } else {
+      a.textContent = w.emoji;
+      a.style.fontSize = Math.floor(S * 0.82) + 'px';
+      a.style.display = 'flex';
+      a.style.alignItems = 'center';
+      a.style.justifyContent = 'center';
+    }
     return a;
   }
 

@@ -12,7 +12,7 @@ var H = window.HWA;
 H.Screens.dragmatch = function (params) {
   var el = H.el;
   var n = Math.min(Math.max(params.n || 3, 2), 6);
-  var picked = window.HWA_pick(n, ['animals', 'fruits', 'vehicles']);
+  var picked = window.HWA_pickImg(n, ['animals', 'fruits', 'vehicles']);
 
   var wrap = el('div', 'g-wrap');
   wrap.appendChild(el('div', 'bubble', 'ลากไปวางให้ตรงคู่ของมันนะ!'));
@@ -22,7 +22,7 @@ H.Screens.dragmatch = function (params) {
   slotRow.style.margin = '10px 0 4px';
   var slots = [];
   H.shuffle(picked).forEach(function (w) {
-    var s = el('div', 'g-slot', w.emoji);
+    var s = el('div', 'g-slot', H.face(w));
     s.style.opacity = '.55';
     s.dataset.id = w.id;
     s.word = w;
@@ -43,7 +43,7 @@ H.Screens.dragmatch = function (params) {
   var left = picked.length;
 
   H.shuffle(picked).forEach(function (w) {
-    var t = el('button', 'g-tile', w.emoji);
+    var t = el('button', 'g-tile', H.face(w));
     t.setAttribute('aria-label', w.english);
     t.dataset.id = w.id;
     tray.appendChild(t);
@@ -68,6 +68,7 @@ H.Screens.dragmatch = function (params) {
           H.setBubble('ใช่เลย! ' + w.english);
           H.speak(w.english);
           H.addStars(1);
+          H.collect(w);
           H.later(function () { H.sfx.ting(); }, 200);
           H.announce('จับคู่ ' + w.english + ' ถูกแล้ว');
           left--;

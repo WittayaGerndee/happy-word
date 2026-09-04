@@ -16,7 +16,7 @@ H.Screens.missing = function (params) {
   if (round >= ROUNDS) { finishAll(); return; }
 
   var n = [3, 3, 4, 5][round];
-  var items = window.HWA_pick(n, ['animals', 'fruits', 'vehicles', 'home']);
+  var items = window.HWA_pickImg(n, ['animals', 'fruits', 'vehicles', 'home']);
   var goneIdx = (Math.random() * n) | 0;
   var gone = items[goneIdx];
 
@@ -28,7 +28,7 @@ H.Screens.missing = function (params) {
   var row = el('div', 'miss-row');
   var nodes = [];
   items.forEach(function (w) {
-    var it = el('button', 'miss-item', w.emoji);
+    var it = el('button', 'miss-item', H.face(w));
     it.style.border = 'none'; it.style.background = 'none';
     it.setAttribute('aria-label', w.english);
     it.addEventListener('click', function () { H.sfx.pop(); H.speak(w.english); });
@@ -73,7 +73,7 @@ H.Screens.missing = function (params) {
       row.innerHTML = '';
       items.forEach(function (w, k) {
         if (k === goneIdx) return;
-        var it = el('button', 'miss-item', w.emoji);
+        var it = el('button', 'miss-item', H.face(w));
         it.style.border = 'none'; it.style.background = 'none';
         it.setAttribute('aria-label', w.english);
         it.addEventListener('click', function () { H.sfx.pop(); H.speak(w.english); });
@@ -87,7 +87,7 @@ H.Screens.missing = function (params) {
     H.setBubble('อะไรหายไปเอ่ย?');
     H.speak('What is missing?', { rate: 0.75 });
 
-    var others = H.shuffle(window.HWA_pick(6, ['animals', 'fruits', 'vehicles', 'home'])
+    var others = H.shuffle(window.HWA_pickImg(6, ['animals', 'fruits', 'vehicles', 'home'])
       .filter(function (x) {
         return x.id !== gone.id && items.every(function (y) { return y.id !== x.id; });
       })).slice(0, 2);
@@ -98,7 +98,7 @@ H.Screens.missing = function (params) {
     var tries = 0, done = false;
 
     choices.forEach(function (w) {
-      var b = el('button', 'g-tile', w.emoji);
+      var b = el('button', 'g-tile', H.face(w));
       b.setAttribute('aria-label', w.english);
       b.dataset.id = w.id;
       b.addEventListener('click', function () { pick(w, b); });
@@ -118,6 +118,7 @@ H.Screens.missing = function (params) {
         H.setBubble('ใช่เลย! ' + gone.english + ' หายไป');
         H.speak(gone.english);
         H.addStars(1);
+        H.collect(gone);
         H.later(function () { H.sfx.ting(); }, 220);
         H.later(function () { H.go('missing', { round: round + 1 }); }, 2000);
         return;

@@ -31,6 +31,7 @@ function blankProfile() {
     createdAt: Date.now(),
     stars: 0, totalStarsEarned: 0,
     unlockedAnimals: [],
+    collections: { animals: [], fruits: [], veggies: [], vehicles: [], home: [], sea: [] },
     learnedWords: [],
     words: {},
     streak: { current: 0, best: 0, lastPlayDate: '' },
@@ -53,8 +54,24 @@ function load() {
     if (!raw) return blankState();
     var d = JSON.parse(raw);
     if (!d.version || !d.profiles) return blankState();
-    return d;
+    return migrate(d);
   } catch (e) { return blankState(); }
+}
+
+/* ย้ายข้อมูลเก่าเข้าโครงคลังสะสมใหม่ — ของที่เคยปลดล็อกไว้ต้องไม่หาย */
+var PACK_KEYS = ['animals', 'fruits', 'veggies', 'vehicles', 'home', 'sea'];
+
+function migrate(d) {
+  Object.keys(d.profiles).forEach(function (k) {
+    var p = d.profiles[k];
+    if (!p.collections) p.collections = {};
+    PACK_KEYS.forEach(function (c) { if (!p.collections[c]) p.collections[c] = []; });
+    if (!p.unlockedAnimals) p.unlockedAnimals = [];
+    p.unlockedAnimals.forEach(function (id) {
+      if (p.collections.animals.indexOf(id) < 0) p.collections.animals.push(id);
+    });
+  });
+  return d;
 }
 
 function save() {
@@ -79,6 +96,62 @@ function addStars(n) {
   void starBox.offsetWidth;
   starBox.classList.add('pop');
   save();
+}
+
+/* ============================================================
+   1.5 คลังสะสม — เล่นเกมไหนก็สะสมของหมวดนั้น
+   ------------------------------------------------------------
+   หัวใจ: เด็กต้องรู้สึกว่า "เล่นแล้วได้อะไรติดมือ" ไม่ใช่จบแล้วหายไป
+   ของทุกชิ้นที่ตอบถูกจะเข้าคลังของหมวดตัวเอง และดูซ้ำได้ตลอด
+   ============================================================ */
+
+var HOME_OF = {
+  animals:  { name: 'สวนสัตว์',   emoji: '\ud83e\udd81' },
+  fruits:   { name: 'สวนผลไม้',   emoji: '\ud83c\udf4e' },
+  veggies:  { name: 'แปลงผัก',    emoji: '\ud83e\udd55' },
+  vehicles: { name: 'โรงรถ',      emoji: '\ud83d\ude97' },
+  home:     { name: 'บ้านของหนู', emoji: '\ud83d\udecb\ufe0f' },
+  sea:      { name: 'ตู้ปลา',     emoji: '\ud83d\udc20' }
+};
+
+function packOf(w) {
+  if (w && w.pack) return w.pack;
+  var all = window.HWA_ALL || [];
+  for (var i = 0; i < all.length; i++) if (all[i].id === w.id) return all[i].pack;
+  return 'animals';
+}
+
+/* คืนค่า true เมื่อเป็นของชิ้นใหม่ (ยังไม่เคยเก็บ) */
+function collect(w) {
+  if (!w || !w.id) return false;
+  var p = P(), pk = packOf(w);
+  if (!p.collections) p.collections = {};
+  if (!p.collections[pk]) p.collections[pk] = [];
+  if (p.collections[pk].indexOf(w.id) >= 0) return false;
+  p.collections[pk].push(w.id);
+  if (pk === 'animals' && p.unlockedAnimals.indexOf(w.id) < 0) p.unlockedAnimals.push(w.id);
+  save();
+  collectToast(w, pk);
+  return true;
+}
+
+function collected(pk) {
+  var p = P();
+  return (p.collections && p.collections[pk]) || [];
+}
+
+/* ป้ายเด้ง "ได้ของใหม่!" — ให้เด็กเห็นผลของการเล่นทันที */
+function collectToast(w, pk) {
+  var h = HOME_OF[pk] || { name: 'คลังของหนู', emoji: '\ud83c\udf81' };
+  var t = el('div', 'collect-toast',
+    '<span class="ct-emoji">' + face(w) + '</span>' +
+    '<span class="ct-text"><b>' + w.english + '</b>' +
+    '<small>' + h.emoji + ' เข้า' + h.name + 'แล้ว!</small></span>');
+  t.style.bottom = (26 + document.querySelectorAll('.collect-toast').length * 86) + 'px';
+  document.body.appendChild(t);
+  later(function () { sfx.ting(); }, 120);
+  setTimeout(function () { t.classList.add('out'); }, 2000);
+  setTimeout(function () { if (t.parentNode) t.remove(); }, 2500);
 }
 
 function markStreakToday() {
@@ -449,6 +522,12 @@ function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
 
 var Screens = {};
 var current = '';
+var depth = 0;      /* เราเพิ่มหน้าเข้า history ไปกี่ชั้นแล้ว — ใช้กันไม่ให้กดกลับหลุดออกจากเกม */
+
+function goBack() {
+  if (depth > 0) history.back();
+  else go('home');
+}
 
 function go(name, params, skipPush) {
   clearTimers();
@@ -461,17 +540,25 @@ function go(name, params, skipPush) {
     var stale = document.getElementById('fpBar');
     if (stale) stale.remove();
     topbar.hidden = (name === 'splash');
-    document.getElementById('btnHome').style.visibility =
-      (name === 'home' || name === 'splash') ? 'hidden' : 'visible';
+    var atRoot = (name === 'home' || name === 'splash');
+    document.getElementById('btnHome').style.visibility = atRoot ? 'hidden' : 'visible';
+    var bb = document.getElementById('btnBack');
+    if (bb) bb.style.visibility = (atRoot || depth === 0) ? 'hidden' : 'visible';
     Screens[name](params || {});
     app.classList.remove('leaving');
     if (!skipPush) {
-      try { history.pushState({ n: name, p: params || {} }, '', '#' + name); } catch (e) {}
+      try {
+        history.pushState({ n: name, p: params || {} }, '', '#' + name);
+        depth++;
+        var b2 = document.getElementById('btnBack');
+        if (b2 && !atRoot) b2.style.visibility = 'visible';
+      } catch (e) {}
     }
   }, 200);
 }
 
 window.addEventListener('popstate', function (e) {
+  depth = Math.max(0, depth - 1);
   if (e.state && Screens[e.state.n]) go(e.state.n, e.state.p, true);
   else go('home', {}, true);
 });
@@ -481,6 +568,17 @@ function el(tag, cls, html) {
   if (cls) e.className = cls;
   if (html !== undefined) e.innerHTML = html;
   return e;
+}
+
+/* ภาพประจำคำ — ใช้ภาพจริงจาก assets/img ถ้ามี ถ้าไม่มีถอยไปใช้ emoji
+   ขนาดอิงจาก font-size ของกล่องที่ครอบอยู่ (1.15em) จึงไม่ต้องแก้ CSS เดิม */
+var IMGV = '?v=6';
+function face(w, extra) {
+  if (w && w.img) {
+    return '<img class="pic ' + (extra || '') + '" src="assets/img/' + w.img + '.png' + IMGV +
+           '" alt="" draggable="false">';
+  }
+  return (w && w.emoji) || '';
 }
 
 function btn(label, cls, onClick) {
@@ -526,7 +624,7 @@ Screens.home = function () {
   var col = el('div', 'btn-col');
   col.appendChild(btn('🎪 เล่นเพลิน', 'big', function () { go('freeplay'); }));
   col.appendChild(btn('🎯 เลือกเกม', 'accent', function () { go('games'); }));
-  col.appendChild(btn('🏡 สวนสัตว์ของหนู', 'calm', function () { go('zoo'); }));
+  col.appendChild(btn('🏆 คลังสะสมของหนู', 'calm', function () { go('collection'); }));
   wrap.appendChild(col);
   app.appendChild(wrap);
 
@@ -560,7 +658,7 @@ Screens.freeplay = function () {
   var taps = 0, invited = false;
 
   list.forEach(function (w, i) {
-    var b = el('button', 'animal', w.emoji);
+    var b = el('button', 'animal', face(w));
     b.setAttribute('aria-label', w.english + ' ' + w.thai);
     var r = (i / cols) | 0, c = i % cols;
     b.style.left = (5 + c * (86 / cols) + (Math.random() * 6 - 3)) + '%';
@@ -630,7 +728,7 @@ Screens.learn = function (params) {
   save();
 
   var card = el('div', 'card');
-  var art = el('div', 'emoji-art', w.emoji);
+  var art = el('div', 'emoji-art', face(w));
   art.setAttribute('role', 'img');
   art.setAttribute('aria-label', w.english);
   art.addEventListener('click', function () {
@@ -722,7 +820,7 @@ Screens.quiz = function (params) {
 
   choices.forEach(function (c) {
     var b = el('button', 'choice',
-      '<span class="ce">' + c.emoji + '</span><span class="cw">' + c.english + '</span>');
+      '<span class="ce">' + face(c) + '</span><span class="cw">' + c.english + '</span>');
     b.setAttribute('aria-label', c.english);
     b.dataset.id = c.id;
     b.addEventListener('click', function () { answer(c, b); });
@@ -758,6 +856,7 @@ Screens.quiz = function (params) {
       setBubble(bunnySay('correct'));
       speak(w.english);
       addStars(1);
+      collect(w);
       later(function () { sfx.ting(); }, 220);
       announce('ถูกต้อง ได้ดาวหนึ่งดวง');
 
@@ -810,14 +909,7 @@ Screens.result = function (params) {
   addStars(2);   /* โบนัสเล่นครบรอบ */
 
   var newAnimal = null;
-  for (var i = 0; i < words.length; i++) {
-    if (P().unlockedAnimals.indexOf(words[i].id) < 0) {
-      P().unlockedAnimals.push(words[i].id);
-      newAnimal = words[i];
-      break;
-    }
-  }
-  save();
+  words.forEach(function (w) { if (collect(w) && !newAnimal) newAnimal = w; });
 
   var wrap = el('div');
   wrap.appendChild(el('div', 'bunny excited', '🐰'));
@@ -829,15 +921,15 @@ Screens.result = function (params) {
 
   if (newAnimal) {
     var na = el('div', 'new-animal');
-    na.appendChild(el('span', 'big', newAnimal.emoji));
+    na.appendChild(el('span', 'big', face(newAnimal)));
     na.appendChild(el('div', 'word-en', newAnimal.english));
     na.appendChild(el('div', 'word-th', 'เข้าสวนสัตว์แล้ว!'));
     wrap.appendChild(na);
   }
 
   var col = el('div', 'btn-col');
-  col.appendChild(btn('🏡 ไปดูสวนสัตว์', 'accent', function () { go('zoo'); }));
-  col.appendChild(btn('🃏 จับคู่ภาพสัตว์', '', function () { go('memory'); }));
+  col.appendChild(btn('🏆 ดูคลังสะสม', 'accent', function () { go('collection'); }));
+  col.appendChild(btn('🎯 เลือกเกมอื่น', '', function () { go('games'); }));
   col.appendChild(btn('🎪 เล่นเพลิน', 'calm', function () { go('freeplay'); }));
   wrap.appendChild(col);
   app.appendChild(wrap);
@@ -902,7 +994,7 @@ Screens.memory = function (params) {
     var b = el('button', 'mcard',
       '<span class="mc-inner">' +
         '<span class="mc-face mc-back">🐾</span>' +
-        '<span class="mc-face mc-front">' + card.w.emoji + '</span>' +
+        '<span class="mc-face mc-front">' + face(card.w) + '</span>' +
       '</span>');
     b.setAttribute('aria-label', 'การ์ดคว่ำ');
     b.dataset.id = card.w.id;
@@ -981,10 +1073,7 @@ Screens.memory = function (params) {
     speak('Great job!', { rate: 0.9 });
 
     /* ปลดล็อกสัตว์ที่เจอในเกมนี้เข้าสวนสัตว์ */
-    picked.forEach(function (w) {
-      if (P().unlockedAnimals.indexOf(w.id) < 0) P().unlockedAnimals.push(w.id);
-    });
-    save();
+    picked.forEach(function (w) { collect(w); });
 
     var box = el('div', 'new-animal');
     box.appendChild(el('div', 'title', '🎉 เก่งมาก!'));
@@ -999,7 +1088,7 @@ Screens.memory = function (params) {
       function () { go('memory', { pairs: pairs < 6 ? pairs + 1 : pairs }); }
     ));
     col.appendChild(btn('🔁 เล่นระดับเดิมอีก', '', function () { go('memory', { pairs: pairs }); }));
-    col.appendChild(btn('🏡 ไปดูสวนสัตว์', 'calm', function () { go('zoo'); }));
+    col.appendChild(btn('🏆 ดูคลังสะสม', 'calm', function () { go('collection'); }));
     wrap.appendChild(col);
 
     grid.style.opacity = '.55';
@@ -1021,7 +1110,7 @@ Screens.zoo = function () {
   D.words.forEach(function (w) {
     var has = p.unlockedAnimals.indexOf(w.id) >= 0;
     var c = el('button', 'zoo-cell' + (has ? '' : ' locked'),
-      '<span class="ze">' + (has ? w.emoji : '🔒') + '</span>' +
+      '<span class="ze">' + (has ? face(w) : '🔒') + '</span>' +
       '<span class="zw">' + (has ? w.english : '???') + '</span>');
     c.setAttribute('aria-label', has ? w.english + ' ' + w.thai : 'ยังไม่ปลดล็อก');
     c.addEventListener('click', function () {
@@ -1056,6 +1145,9 @@ document.getElementById('btnHome').addEventListener('click', function () {
   go('home');
 });
 
+var backBtn = document.getElementById('btnBack');
+if (backBtn) backBtn.addEventListener('click', function () { sfx.pop(); goBack(); });
+
 var fullBtn = document.getElementById('btnFull');
 if (fsSupported()) {
   fullBtn.hidden = false;
@@ -1069,7 +1161,7 @@ window.addEventListener('beforeunload', save);
 /* ป้ายเวอร์ชันเล็ก ๆ มุมล่างขวา — ไว้เช็คว่าเบราว์เซอร์โหลดไฟล์ใหม่แล้วจริงไหม */
 var vTag = document.createElement('div');
 vTag.className = 'version-tag';
-vTag.textContent = 'v5';
+vTag.textContent = 'v6';
 document.body.appendChild(vTag);
 
 /* ============================================================
@@ -1079,12 +1171,14 @@ document.body.appendChild(vTag);
    การส่งออกเป็นชุดเดียวทำให้เพิ่มเกมใหม่ได้โดยไม่ต้องแตะ app.js อีก
    ============================================================ */
 window.HWA = {
-  el: el, btn: btn, go: go, Screens: Screens, app: app,
+  el: el, btn: btn, face: face, go: go, Screens: Screens, app: app,
   speak: speak, pulse: pulse, sayLabel: sayLabel, sfx: sfx, tone: tone,
   confetti: confetti, confettiFrom: confettiFrom, butterfly: butterfly,
   bunnySay: bunnySay, setBubble: setBubble, bunnyEmote: bunnyEmote,
   shuffle: shuffle, later: later, clearTimers: clearTimers, announce: announce,
   addStars: addStars, save: save, profile: P, wordRec: wordRec,
+  collect: collect, collected: collected, packOf: packOf, homeOf: HOME_OF,
+  goBack: goBack, packKeys: PACK_KEYS,
   pickWords: pickWords, thaiFor: thaiFor, data: D,
   rnd: function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); },
   /* กล่องสรุปท้ายเกม — ทุกเกมใช้หน้าตาเดียวกัน เด็กจะได้คุ้นเคย */
@@ -1101,6 +1195,7 @@ window.HWA = {
     col.style.marginTop = '16px';
     if (opts.next) col.appendChild(btn(opts.nextLabel || '➕ เล่นต่อ', 'accent', opts.next));
     if (opts.again) col.appendChild(btn('🔁 เล่นอีกรอบ', '', opts.again));
+    col.appendChild(btn('🏆 ดูคลังสะสม', '', function () { go('collection'); }));
     col.appendChild(btn('🎯 เลือกเกมอื่น', 'calm', function () { go('games'); }));
     wrap.appendChild(col);
   }

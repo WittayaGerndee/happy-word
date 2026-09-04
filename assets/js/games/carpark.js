@@ -1,20 +1,33 @@
 /* ============================================================
    🚗 รถสีเดียวกัน — ลากรถไปจอดในช่องที่สีเดียวกัน
    ทักษะ: สี + การลาก (กล้ามเนื้อมัดเล็ก)
+   ------------------------------------------------------------
+   ใช้รถจริงจากโปสเตอร์ยานพาหนะ: รถแต่ละคันมี "สีของตัวเอง" อยู่แล้ว
+   (แดง=รถดับเพลิง เหลือง=แท็กซี่ น้ำเงิน=รถตำรวจ ...) เด็กจึงเทียบสี
+   จากภาพจริง ไม่ใช่จาก emoji ที่ถูกย้อมสี
    ============================================================ */
 (function () {
 'use strict';
 var H = window.HWA, PK = window.HWA_PACKS;
-var CARS = ['🚗', '🚙', '🚕', '🚌', '🚚', '🏎️'];
+var USE = ['red', 'yellow', 'blue', 'green', 'orange', 'purple', 'pink'];
 
 H.Screens.carpark = function (params) {
   var el = H.el;
   var n = Math.min(Math.max(params.n || 3, 2), 5);
 
+  /* เลือกสีที่ "มีรถจริงสีนั้น" เท่านั้น แล้วสุ่มรถหนึ่งคันต่อหนึ่งสี */
+  var byColor = {};
+  PK.vehicles.words.forEach(function (v) {
+    if (!v.img || !v.color) return;
+    (byColor[v.color] = byColor[v.color] || []).push(v);
+  });
   var palette = H.shuffle(PK.colors.filter(function (c) {
-    return ['red', 'yellow', 'blue', 'green', 'orange', 'purple', 'pink'].indexOf(c.id) >= 0;
+    return USE.indexOf(c.id) >= 0 && byColor[c.id] && byColor[c.id].length;
   })).slice(0, n);
-  var shapes = H.shuffle(CARS).slice(0, n);
+  n = palette.length;
+
+  var carOf = {};
+  palette.forEach(function (c) { carOf[c.id] = H.shuffle(byColor[c.id])[0]; });
 
   var wrap = el('div', 'g-wrap');
   wrap.appendChild(el('div', 'bubble', 'จอดรถในช่องสีเดียวกันนะ!'));
@@ -44,11 +57,11 @@ H.Screens.carpark = function (params) {
 
   var left = n;
 
-  H.shuffle(palette).forEach(function (c, idx) {
-    var car = el('button', 'g-tile tinted', shapes[idx]);
-    car.style.setProperty('--tint', c.hex);
+  H.shuffle(palette).forEach(function (c) {
+    var v = carOf[c.id];
+    var car = el('button', 'g-tile', H.face(v));
     car.dataset.color = c.id;
-    car.setAttribute('aria-label', 'รถสี' + c.thai);
+    car.setAttribute('aria-label', v.thai + ' สี' + c.thai);
     tray.appendChild(car);
 
     window.HWA_drag(car, {
@@ -56,22 +69,22 @@ H.Screens.carpark = function (params) {
         return slots.filter(function (s) { return s.dataset.filled !== '1'; });
       },
       onStart: function () { H.speak(c.english); },
-      onTap: function () { H.sfx.pop(); H.speak(c.english + ' car.', { rate: 0.8 }); },
+      onTap: function () { H.sfx.pop(); H.speak(c.english + ' ' + v.english + '.', { rate: 0.8 }); },
       onDrop: function (slot) {
         slot.classList.remove('hot');
         if (slot.dataset.color === c.id) {
           slot.dataset.filled = '1';
           slot.classList.add('filled');
           slot.style.background = c.hex;
-          slot.textContent = shapes[idx];
+          slot.innerHTML = H.face(v);
           car.dataset.locked = '1';
           car.classList.add('gone');
           H.sfx.yay();
           H.confettiFrom(slot, 26);
-          H.setBubble('จอดถูกช่อง! ' + c.english);
+          H.setBubble('จอดถูกช่อง! ' + c.english + ' ' + v.english);
           H.speak(c.english);
           H.addStars(1);
-          H.later(function () { H.sfx.ting(); }, 200);
+          H.collect(v);                      /* รถคันนี้เข้าโรงรถของหนู */
           H.announce('จอดรถสี' + c.thai + 'ถูกช่อง');
           left--;
           if (left === 0) H.later(finish, 900);
@@ -90,7 +103,7 @@ H.Screens.carpark = function (params) {
     H.bunnyEmote('excited');
     H.finishBox(wrap, {
       title: 'จอดครบทุกคันแล้ว!',
-      sub: 'จับคู่สีได้ ' + n + ' คัน',
+      sub: 'รถ ' + n + ' คันเข้าโรงรถของหนูแล้ว 🚗',
       next: n < 5 ? function () { H.go('carpark', { n: n + 1 }); } : null,
       nextLabel: '➕ เพิ่มรถอีกคัน',
       again: function () { H.go('carpark', { n: n }); }

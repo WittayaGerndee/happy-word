@@ -76,9 +76,11 @@ H.Screens.starcatch = function (params) {
     ended = true;
     live.forEach(function (n) { if (n.isConnected) n.remove(); });
     H.bunnyEmote('excited');
+    /* เก็บดาวครบ = เปิดกล่องสุ่ม ได้ของเข้าคลัง 1 ชิ้น */
+    var prize = H.surprise ? H.surprise() : null;
     H.finishBox(wrap, {
       title: 'เก็บครบแล้ว!',
-      sub: 'ได้ดาว ' + goal + ' ดวง',
+      sub: prize ? ('ได้ ' + prize.emoji + ' ' + prize.english + ' เข้าคลังด้วย!') : ('ได้ดาว ' + goal + ' ดวง'),
       next: goal < 20 ? function () { H.go('starcatch', { goal: goal + 5 }); } : null,
       nextLabel: '➕ ลองเก็บให้มากขึ้น',
       again: function () { H.go('starcatch', { goal: goal }); }

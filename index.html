@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/style.css?v=5">
-<link rel="stylesheet" href="assets/css/games.css?v=5">
+<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/games.css?v=6">
 </head>
 <body>
 
@@ -33,7 +33,10 @@
 
   <!-- แถบบน: ดาว -->
   <div id="topbar" class="topbar" hidden>
-    <button class="icon-btn" id="btnHome" aria-label="กลับหน้าแรก">🏠</button>
+    <div class="topbar-left">
+      <button class="icon-btn" id="btnHome" aria-label="กลับหน้าแรก">🏠</button>
+      <button class="icon-btn" id="btnBack" aria-label="ย้อนกลับหนึ่งหน้า">⬅️</button>
+    </div>
     <div class="topbar-right">
       <button class="icon-btn" id="btnFull" aria-label="เต็มหน้าจอ" hidden>⛶</button>
       <div class="stars" id="starBox" aria-live="polite">
@@ -47,22 +50,24 @@
 
   <canvas id="fx" aria-hidden="true"></canvas>
 
-  <script src="data/animals.js?v=5"></script>
-  <script src="data/packs.js?v=5"></script>
-  <script src="assets/js/app.js?v=5"></script>
+  <script src="data/animals.js?v=6"></script>
+  <script src="data/packs.js?v=6"></script>
+  <script src="data/pack-sea.js?v=6"></script>
+  <script src="assets/js/app.js?v=6"></script>
 
   <!-- เกมเสริม — ไฟล์ละหนึ่งเกม เพิ่มเกมใหม่ก็ต่อบรรทัดตรงนี้ -->
-  <script src="assets/js/games/dragkit.js?v=5"></script>
-  <script src="assets/js/games/hub.js?v=5"></script>
-  <script src="assets/js/games/colorgame.js?v=5"></script>
-  <script src="assets/js/games/countgame.js?v=5"></script>
-  <script src="assets/js/games/starcatch.js?v=5"></script>
-  <script src="assets/js/games/balloons.js?v=5"></script>
-  <script src="assets/js/games/dragmatch.js?v=5"></script>
-  <script src="assets/js/games/feedfish.js?v=5"></script>
-  <script src="assets/js/games/carpark.js?v=5"></script>
-  <script src="assets/js/games/puzzle.js?v=5"></script>
-  <script src="assets/js/games/maze.js?v=5"></script>
-  <script src="assets/js/games/missing.js?v=5"></script>
+  <script src="assets/js/games/dragkit.js?v=6"></script>
+  <script src="assets/js/games/hub.js?v=6"></script>
+  <script src="assets/js/games/collection.js?v=6"></script>
+  <script src="assets/js/games/colorgame.js?v=6"></script>
+  <script src="assets/js/games/countgame.js?v=6"></script>
+  <script src="assets/js/games/starcatch.js?v=6"></script>
+  <script src="assets/js/games/balloons.js?v=6"></script>
+  <script src="assets/js/games/dragmatch.js?v=6"></script>
+  <script src="assets/js/games/feedfish.js?v=6"></script>
+  <script src="assets/js/games/carpark.js?v=6"></script>
+  <script src="assets/js/games/puzzle.js?v=6"></script>
+  <script src="assets/js/games/maze.js?v=6"></script>
+  <script src="assets/js/games/missing.js?v=6"></script>
 </body>
 </html>

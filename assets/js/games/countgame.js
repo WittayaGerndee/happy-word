@@ -17,7 +17,7 @@ H.Screens.countgame = function (params) {
   /* จำนวนค่อย ๆ ยากขึ้น: 1–3, 2–4, 3–6, 4–8, 5–10 */
   var lo = [1, 2, 3, 4, 5][round], hi = [3, 4, 6, 8, 10][round];
   var n = H.rnd(lo, hi);
-  var fruit = window.HWA_pick(1, ['fruits'])[0];
+  var fruit = window.HWA_pickImg(1, ['fruits'])[0];
   var numWord = PK.numbers[n - 1];
 
   var wrap = el('div', 'g-wrap');
@@ -38,7 +38,7 @@ H.Screens.countgame = function (params) {
   var counted = 0;
   for (var i = 0; i < n; i++) {
     (function () {
-      var it = el('button', 'count-item', fruit.emoji);
+      var it = el('button', 'count-item', H.face(fruit));
       it.style.border = 'none';
       it.style.background = 'none';
       it.style.animationDelay = (Math.random() * 3) + 's';
@@ -96,6 +96,7 @@ H.Screens.countgame = function (params) {
       H.setBubble(H.bunnySay('correct'));
       H.speak(numWord.english + '. ' + n + ' ' + fruit.english + '.', { rate: 0.75 });
       H.addStars(1);
+      H.collect(fruit);
       H.later(function () { H.sfx.ting(); }, 220);
       H.later(function () { H.go('countgame', { round: round + 1 }); }, 2100);
       return;

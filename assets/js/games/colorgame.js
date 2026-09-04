@@ -15,13 +15,13 @@ H.Screens.colorgame = function (params) {
 
   /* เลือกสีโจทย์จากสีที่มีของให้เลือกจริง ๆ อย่างน้อย 1 ชิ้น */
   var usable = PK.colors.filter(function (c) {
-    return window.HWA_ALL.filter(function (w) { return w.color === c.id; }).length >= 1;
+    return window.HWA_ALL.filter(function (w) { return w.color === c.id && w.img; }).length >= 2;
   });
   var target = H.shuffle(usable)[0];
 
-  var same = H.shuffle(window.HWA_ALL.filter(function (w) { return w.color === target.id; }))[0];
+  var same = H.shuffle(window.HWA_ALL.filter(function (w) { return w.color === target.id && w.img; }))[0];
   var others = H.shuffle(window.HWA_ALL.filter(function (w) {
-    return w.color !== target.id && w.emoji !== same.emoji;
+    return w.color && w.img && w.color !== target.id && w.id !== same.id;
   })).slice(0, 3);
   /* กันตัวลวงสีซ้ำกันเอง เพื่อให้ภาพอ่านง่าย */
   var seen = {};
@@ -49,7 +49,7 @@ H.Screens.colorgame = function (params) {
   var tries = 0, finished = false;
 
   items.forEach(function (w) {
-    var b = el('button', 'g-tile', w.emoji);
+    var b = el('button', 'g-tile', H.face(w));
     b.setAttribute('aria-label', w.english);
     b.dataset.color = w.color;
     b.addEventListener('click', function () { tap(w, b); });
@@ -79,6 +79,7 @@ H.Screens.colorgame = function (params) {
       H.setBubble(H.bunnySay('correct'));
       H.speak(target.english + '. ' + w.english + '.', { rate: 0.78 });
       H.addStars(1);
+      H.collect(w);
       H.later(function () { H.sfx.ting(); }, 220);
       H.later(function () { H.go('colorgame', { round: round + 1 }); }, 1900);
       return;
