@@ -25,7 +25,8 @@ H.Screens.feedfish = function (params) {
   var wrap = el('div', 'g-wrap');
 
   var prompt = el('div', 'g-prompt');
-  prompt.appendChild(el('span', '', hungryPair.word.thai + 'สี' + hungry.thai.replace('สี', '') + 'หิวแล้ว!'));
+  /* ไม่เอาชื่อสัตว์มาต่อกับสี เพราะบางตัวมีคำว่าสีอยู่ในชื่อแล้ว (เช่น ปลาสีฟ้า) */
+  prompt.appendChild(el('span', '', 'ตัวที่หิวอยากได้อาหาร' + hungry.thai + '!'));
   var say = el('button', 'g-say', '🔊');
   say.setAttribute('aria-label', 'ฟังอีกครั้ง');
   say.addEventListener('click', function () {

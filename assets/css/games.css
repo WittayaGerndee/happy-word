@@ -661,3 +661,231 @@
 
 /* ป้าย "ได้ของใหม่!" ไม่ให้ล้นจอเวลาได้หลายชิ้นพร้อมกัน */
 .collect-toast:nth-last-child(n + 4) { display: none; }
+
+/* ============================================================
+   คลังสะสม (v3) — พอดีจอเสมอ ไม่มีแถบเลื่อน แบ่งหน้าด้วยปุ่มลูกศรใหญ่
+   เหตุผล: เด็ก 4–5 ขวบเลื่อนจอไม่เป็น ของใต้ขอบจอ = ของที่หายไป
+   ============================================================ */
+
+.coll-page {
+  height: 100%;
+  overflow: hidden;                 /* ห้ามเลื่อน */
+  gap: clamp(6px, 1.4vw, 14px);
+}
+.coll-page > * { flex: 0 0 auto; }
+
+.coll-head { padding: clamp(8px, 1.8vw, 16px) clamp(14px, 3vw, 26px); }
+.coll-title { font-size: clamp(20px, 4.6vw, 30px); }
+.coll-sub   { margin: 2px 0 8px; font-size: clamp(13px, 3vw, 17px); }
+.coll-bar   { height: clamp(10px, 1.6vw, 14px); }
+
+.coll-strip { padding: 2px clamp(4px, 2vw, 12px) 4px; }
+.coll-tab {
+  width: clamp(76px, 20vw, 124px);
+  min-height: clamp(70px, 13vw, 92px);
+  padding: 7px 6px;
+}
+.coll-tab .cti { font-size: clamp(22px, 5.4vw, 32px); }
+.coll-tab .ctn { font-size: clamp(12px, 2.9vw, 15px); }
+.coll-tab .ctc { font-size: clamp(11px, 2.4vw, 13px); }
+
+/* แผงของ: ยืดเต็มที่ว่างที่เหลือ แล้วตารางกินพื้นที่ตรงกลาง */
+.coll-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 2vw, 18px);
+}
+.coll-panel-head { margin-bottom: 6px; }
+.cph-name  { font-size: clamp(16px, 3.8vw, 22px); }
+.cph-count { font-size: clamp(14px, 3.2vw, 18px); }
+
+.coll-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  gap: var(--gap, 12px);
+  justify-content: center;
+  align-content: start;
+  margin-top: 10px;
+}
+
+.coll-cell {
+  padding: 6px 4px;
+  gap: 0;
+  justify-content: center;
+  border-bottom-width: 4px;
+  border-radius: 18px;
+}
+.coll-cell .cc-art {
+  height: auto;
+  font-size: calc(var(--cw, 100px) * 0.46);
+  margin-bottom: 2px;
+}
+.coll-cell .cc-art .pic {
+  width: calc(var(--cw, 100px) * 0.54);
+  height: calc(var(--cw, 100px) * 0.54);
+}
+.coll-cell .cc-en { font-size: calc(var(--cw, 100px) * 0.145); line-height: 1.1; }
+.coll-cell .cc-th { font-size: calc(var(--cw, 100px) * 0.125); line-height: 1.1; }
+.coll-cell .cc-lock { top: 4px; right: 5px; font-size: 13px; }
+
+/* ---- ปุ่มพลิกหน้า ---- */
+.coll-pager {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(12px, 3vw, 22px);
+  padding-top: clamp(6px, 1.4vw, 12px);
+}
+.coll-arrow {
+  width: clamp(56px, 13vw, 72px);
+  height: clamp(56px, 13vw, 72px);
+  border: none;
+  border-bottom: 5px solid var(--primary-dark);
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: clamp(22px, 5vw, 28px);
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .16);
+  transition: transform var(--dur-fast);
+}
+.coll-arrow:active:not(:disabled) { transform: translateY(4px); border-bottom-width: 2px; }
+.coll-arrow:disabled { opacity: .28; cursor: default; }
+.coll-arrow:focus-visible { outline: 5px solid var(--accent); outline-offset: 4px; }
+
+.coll-dots { display: flex; gap: 10px; align-items: center; }
+.coll-dot {
+  width: 16px; height: 16px; padding: 0;
+  border: none; border-radius: 50%;
+  background: rgba(0, 0, 0, .16);
+  cursor: pointer;
+}
+.coll-dot.on { background: var(--primary); transform: scale(1.35); }
+
+/* จอเตี้ยแนวนอน: ย่อหัวเรื่องกับแถบหมวดให้เหลือที่ให้ของมากที่สุด */
+@media (orientation: landscape) and (max-height: 600px) {
+  .coll-head { padding: 6px 14px; }
+  .coll-title { font-size: 19px; }
+  .coll-sub { margin: 0 0 5px; font-size: 13px; }
+  .coll-bar { height: 8px; }
+  .coll-tab { min-height: 62px; width: 84px; padding: 5px 4px; }
+  .coll-tab .cti { font-size: 20px; }
+  .coll-tab .ctn { font-size: 12px; }
+  .coll-arrow { width: 52px; height: 52px; font-size: 20px; }
+}
+
+/* ============================================================
+   หน้าเลือกเกม — พอดีจอเช่นกัน ไม่ต้องเลื่อนหาเกม
+   ============================================================ */
+.games-wrap {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+.games-wrap .title { margin: 0; font-size: clamp(22px, 5vw, 32px); }
+.games-wrap .bubble { margin: 4px auto 2px; font-size: clamp(15px, 3.4vw, 20px); }
+
+.game-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: clamp(8px, 1.8vw, 16px);
+  width: 100%;
+  max-width: 980px;
+  margin: 6px auto 0;
+}
+@media (min-width: 560px) { .game-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 900px) { .game-grid { grid-template-columns: repeat(6, 1fr); } }
+
+.game-card {
+  min-height: 0;
+  padding: 6px 4px;
+  gap: 2px;
+  border-bottom-width: 5px;
+  border-radius: 20px;
+}
+.gc-icon  { font-size: clamp(26px, 6.5vw, 42px); }
+.gc-name  { font-size: clamp(12px, 2.9vw, 18px); line-height: 1.15; }
+.gc-skill { font-size: clamp(10px, 2.3vw, 14px); line-height: 1.1; }
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .games-wrap .title { font-size: 20px; }
+  .games-wrap .bubble { font-size: 14px; margin: 2px auto; }
+  .gc-icon { font-size: 24px; }
+  .gc-name { font-size: 13px; }
+  .gc-skill { font-size: 11px; }
+}
+
+/* ---- ลดพื้นที่ส่วนหัว/แถบ/ปุ่ม ให้เหลือที่ให้ "ของ" มากที่สุด ---- */
+.coll-head { padding: clamp(7px, 1.4vw, 12px) clamp(12px, 2.4vw, 20px); }
+.coll-title { font-size: clamp(18px, 4vw, 26px); }
+.coll-sub { margin: 1px 0 6px; font-size: clamp(12px, 2.6vw, 15px); }
+.coll-bar { height: clamp(8px, 1.2vw, 11px); }
+.coll-tab { min-height: clamp(62px, 11vw, 84px); }
+.coll-panel { padding: clamp(8px, 1.6vw, 14px); }
+.coll-grid { margin-top: 8px; }
+.coll-pager { gap: clamp(10px, 2.4vw, 18px); padding-top: clamp(5px, 1vw, 10px); }
+.coll-arrow { width: clamp(48px, 11vw, 62px); height: clamp(48px, 11vw, 62px); font-size: clamp(19px, 4.2vw, 24px); }
+
+/* แท็บเล็ตวางนอน / จอไม่สูง: บีบให้แน่นขึ้นอีกขั้น */
+@media (orientation: landscape) and (max-height: 900px) {
+  .coll-head { padding: 5px 14px; }
+  .coll-title { font-size: 19px; }
+  .coll-sub { margin: 0 0 4px; font-size: 13px; }
+  .coll-bar { height: 8px; }
+  .coll-tab { min-height: 58px; width: clamp(72px, 9vw, 104px); padding: 4px; }
+  .coll-tab .cti { font-size: 20px; }
+  .coll-tab .ctn { font-size: 12px; }
+  .coll-tab .ctc { font-size: 11px; }
+  .coll-page { gap: 6px; }
+}
+
+/* มือถือแนวนอน (จอเตี้ยมาก) — โหมดแน่นสุด ให้ยังเห็นของและปุ่มพลิกหน้าครบ */
+@media (orientation: landscape) and (max-height: 470px) {
+  #app { padding-top: 88px; padding-bottom: 10px; }
+  .coll-page { gap: 4px; }
+  .coll-head { padding: 4px 12px; }
+  .coll-title { font-size: 16px; }
+  .coll-sub { display: none; }          /* ตัวเลขรวมอยู่ในแถบหมวดอยู่แล้ว */
+  .coll-bar { height: 6px; }
+  .coll-strip { padding: 0 6px 2px; }
+  .coll-tab { min-height: 48px; width: 68px; padding: 3px; border-bottom-width: 3px; }
+  .coll-tab .cti { font-size: 17px; }
+  .coll-tab .ctn { font-size: 10px; }
+  .coll-tab .ctc { font-size: 10px; }
+  .coll-panel { padding: 6px 8px; }
+  .coll-panel-head { margin-bottom: 2px; }
+  .cph-name { font-size: 14px; }
+  .cph-count { font-size: 13px; }
+  .coll-grid { margin-top: 4px; }
+  .coll-pager { padding-top: 4px; gap: 12px; }
+  .coll-arrow { width: 42px; height: 42px; font-size: 17px; border-bottom-width: 3px; }
+  .coll-dot { width: 12px; height: 12px; }
+
+  .games-wrap .title { font-size: 17px; }
+  .games-wrap .bubble { display: none; }
+}
+
+/* จอแคบ: ให้ 6 หมวดอยู่ครบในแถวเดียว ไม่ต้องเลื่อนแถบหมวด
+   (เด็กเล็กไม่รู้ว่ามีของซ่อนอยู่นอกจอ) — โชว์ไอคอนกับตัวเลขก็พอ */
+@media (max-width: 560px) {
+  .coll-strip { overflow: visible; margin: 0; padding: 0 0 2px; }
+  .coll-strip-in { width: 100%; flex-wrap: nowrap; gap: 6px; }
+  .coll-strip-in .coll-tab {
+    flex: 1 1 0; width: auto; min-width: 0;
+    min-height: 58px; padding: 5px 2px; border-radius: 16px;
+  }
+  .coll-tab .ctn { display: none; }
+  .coll-tab .cti { font-size: 25px; }
+  .coll-tab .ctc { font-size: 11px; }
+}
+
+/* จัดตารางให้อยู่กลางแผง ดูสมดุลกว่าชิดบน */
+.coll-grid { align-content: center; }
