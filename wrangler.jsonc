@@ -1,0 +1,13 @@
+{
+  // Cloudflare Workers — เว็บ static ล้วน ไม่มีโค้ดฝั่งเซิร์ฟเวอร์
+  // deploy ด้วยคำสั่งเดียว:  npx wrangler deploy
+  //
+  // ทำไมต้องมีไฟล์นี้: การ git push ขึ้น GitHub ไม่ได้ทำให้ Worker อัปเดตเอง
+  // ต้องสั่ง deploy ทุกครั้ง ไฟล์นี้ทำให้สั่งได้จากในโปรเจกต์เลย ไม่ต้องตั้งค่าซ้ำ
+  "name": "happy-word",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./",
+    "html_handling": "auto-trailing-slash"
+  }
+}

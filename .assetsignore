@@ -1,0 +1,12 @@
+# ไฟล์ที่ไม่ต้องอัปขึ้นเว็บ
+.git
+.gitignore
+.assetsignore
+wrangler.jsonc
+.wrangler
+uploads
+Claude outputs
+*.md
+*.tgz
+*.tar.gz
+.DS_Store
