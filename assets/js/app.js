@@ -575,7 +575,7 @@ function el(tag, cls, html) {
 
 /* ภาพประจำคำ — ใช้ภาพจริงจาก assets/img ถ้ามี ถ้าไม่มีถอยไปใช้ emoji
    ขนาดอิงจาก font-size ของกล่องที่ครอบอยู่ (1.15em) จึงไม่ต้องแก้ CSS เดิม */
-var IMGV = '?v=9';
+var IMGV = '?v=10';
 function face(w, extra) {
   if (w && w.img) {
     return '<img class="pic ' + (extra || '') + '" src="assets/img/' + w.img + '.png' + IMGV +
@@ -1164,7 +1164,7 @@ window.addEventListener('beforeunload', save);
 /* ป้ายเวอร์ชันเล็ก ๆ มุมล่างขวา — ไว้เช็คว่าเบราว์เซอร์โหลดไฟล์ใหม่แล้วจริงไหม */
 var vTag = document.createElement('div');
 vTag.className = 'version-tag';
-vTag.textContent = 'v9';
+vTag.textContent = 'v10';
 document.body.appendChild(vTag);
 
 /* ============================================================

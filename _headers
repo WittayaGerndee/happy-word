@@ -18,3 +18,10 @@
 
 /data/*
   Cache-Control: public, max-age=0, must-revalidate
+
+# ตัวบอกเวอร์ชัน — ห้าม cache เด็ดขาด ใช้ตรวจว่าเบราว์เซอร์ค้าง index.html เก่าไหม
+/version.txt
+  Cache-Control: no-store, max-age=0
+
+/index.html
+  Cache-Control: no-store, max-age=0

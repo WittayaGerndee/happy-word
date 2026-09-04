@@ -14,8 +14,32 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/style.css?v=9">
-<link rel="stylesheet" href="assets/css/games.css?v=9">
+
+<!-- ตรวจว่าเบราว์เซอร์ยังค้าง index.html ตัวเก่าอยู่หรือเปล่า
+     ไฟล์ version.txt ถูกดึงแบบ no-store เสมอ ถ้าเลขไม่ตรงกับที่ฝังในหน้านี้
+     แปลว่าหน้านี้เก่า ให้โหลดใหม่ด้วย query ใหม่หนึ่งครั้ง (กันวนลูปด้วย sessionStorage)
+     เหตุผล: ไฟล์ _headers กันแคชได้เฉพาะบน Cloudflare Pages เท่านั้น -->
+<script>
+(function () {
+  var V = '10';
+  try {
+    fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (t) {
+        if (!t) return;
+        t = t.trim();
+        var k = 'hwa_reload_' + t;
+        if (t && t !== V && !sessionStorage.getItem(k)) {
+          sessionStorage.setItem(k, '1');
+          location.replace(location.pathname + '?v=' + t + location.hash);
+        }
+      })
+      .catch(function () {});
+  } catch (e) {}
+})();
+</script>
+<link rel="stylesheet" href="assets/css/style.css?v=10">
+<link rel="stylesheet" href="assets/css/games.css?v=10">
 </head>
 <body>
 
@@ -52,24 +76,24 @@
 
   <canvas id="fx" aria-hidden="true"></canvas>
 
-  <script src="data/animals.js?v=9"></script>
-  <script src="data/packs.js?v=9"></script>
-  <script src="data/pack-sea.js?v=9"></script>
-  <script src="assets/js/app.js?v=9"></script>
+  <script src="data/animals.js?v=10"></script>
+  <script src="data/packs.js?v=10"></script>
+  <script src="data/pack-sea.js?v=10"></script>
+  <script src="assets/js/app.js?v=10"></script>
 
   <!-- เกมเสริม — ไฟล์ละหนึ่งเกม เพิ่มเกมใหม่ก็ต่อบรรทัดตรงนี้ -->
-  <script src="assets/js/games/dragkit.js?v=9"></script>
-  <script src="assets/js/games/hub.js?v=9"></script>
-  <script src="assets/js/games/collection.js?v=9"></script>
-  <script src="assets/js/games/colorgame.js?v=9"></script>
-  <script src="assets/js/games/countgame.js?v=9"></script>
-  <script src="assets/js/games/starcatch.js?v=9"></script>
-  <script src="assets/js/games/balloons.js?v=9"></script>
-  <script src="assets/js/games/dragmatch.js?v=9"></script>
-  <script src="assets/js/games/feedfish.js?v=9"></script>
-  <script src="assets/js/games/carpark.js?v=9"></script>
-  <script src="assets/js/games/puzzle.js?v=9"></script>
-  <script src="assets/js/games/maze.js?v=9"></script>
-  <script src="assets/js/games/missing.js?v=9"></script>
+  <script src="assets/js/games/dragkit.js?v=10"></script>
+  <script src="assets/js/games/hub.js?v=10"></script>
+  <script src="assets/js/games/collection.js?v=10"></script>
+  <script src="assets/js/games/colorgame.js?v=10"></script>
+  <script src="assets/js/games/countgame.js?v=10"></script>
+  <script src="assets/js/games/starcatch.js?v=10"></script>
+  <script src="assets/js/games/balloons.js?v=10"></script>
+  <script src="assets/js/games/dragmatch.js?v=10"></script>
+  <script src="assets/js/games/feedfish.js?v=10"></script>
+  <script src="assets/js/games/carpark.js?v=10"></script>
+  <script src="assets/js/games/puzzle.js?v=10"></script>
+  <script src="assets/js/games/maze.js?v=10"></script>
+  <script src="assets/js/games/missing.js?v=10"></script>
 </body>
 </html>

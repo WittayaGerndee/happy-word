@@ -16,7 +16,7 @@ H.Screens.puzzle = function (params) {
   var lv = Math.min(params.lv || 0, LEVELS.length - 1);
   var R = LEVELS[lv].r, C = LEVELS[lv].c;
   var w = window.HWA_pickImg(1, ['animals'])[0] || H.data.words[0];
-  var src = w.img ? 'assets/img/' + w.img + '.png?v=9' : '';
+  var src = w.img ? 'assets/img/' + w.img + '.png?v=10' : '';
 
   /* ขนาดกระดานให้พอดีจอ แต่ไม่ใหญ่เกินจนชิ้นส่วนล้น */
   var S = Math.min(300, Math.max(200, Math.min(window.innerWidth - 60, window.innerHeight - 380)));
