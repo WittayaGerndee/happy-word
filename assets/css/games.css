@@ -462,3 +462,202 @@
 
 /* ป้องกันภาพล้นออกนอกกล่องเล็ก ๆ */
 .g-tile, .g-slot, .count-item, .miss-item, .zoo-cell, .park-slot { overflow: hidden; }
+
+/* ============================================================
+   คลังสะสม (v2) — ออกแบบใหม่ให้อ่านง่ายทั้งกลางวัน/กลางคืน
+   และปรับตัวได้ตั้งแต่มือถือเล็กจนถึงจอคอม
+   ============================================================ */
+
+.coll-page {
+  width: min(1100px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vw, 16px);
+  padding-bottom: 18px;
+}
+/* กันไม่ให้ flex บีบแถบหมวดจนแบน เวลาของในหมวดเยอะ */
+.coll-page > * { flex: 0 0 auto; }
+
+/* ---- หัวเรื่อง ---- */
+.coll-head {
+  background: rgba(255, 255, 255, .92);
+  border-radius: var(--r);
+  padding: clamp(12px, 2.4vw, 18px) clamp(16px, 3vw, 26px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+}
+.coll-title {
+  margin: 0;
+  font-size: clamp(24px, 5.6vw, 34px);
+  color: var(--text);
+  text-shadow: none;
+}
+.coll-sub {
+  margin: 4px 0 10px;
+  font-size: clamp(15px, 3.4vw, 18px);
+  color: var(--text-soft);
+}
+.coll-sub b { color: var(--text); font-size: 1.15em; }
+
+/* ---- แถบความคืบหน้า ---- */
+.coll-bar {
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .09);
+  overflow: hidden;
+}
+.coll-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--success));
+  transition: width .6s var(--ease-bounce);
+  min-width: 3px;
+}
+
+/* ---- แถบเลือกหมวด: จอเล็กเลื่อนแนวนอน จอใหญ่กระจายเต็ม ---- */
+.coll-strip {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 calc(-1 * clamp(4px, 2vw, 12px));
+  padding: 4px clamp(4px, 2vw, 12px) 8px;
+}
+.coll-strip::-webkit-scrollbar { display: none; }
+.coll-strip-in {
+  display: flex;
+  gap: clamp(8px, 1.6vw, 14px);
+  min-width: min-content;
+}
+
+.coll-tab {
+  flex: 0 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px;
+  width: clamp(88px, 22vw, 128px);
+  min-height: 92px;
+  padding: 10px 8px;
+  border: none;
+  border-bottom: 5px solid rgba(0, 0, 0, .10);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .78);
+  font-family: inherit; color: var(--text);
+  cursor: pointer;
+  transition: transform var(--dur-fast), background var(--dur-fast);
+}
+.coll-tab:active { transform: translateY(3px); border-bottom-width: 2px; }
+.coll-tab:focus-visible { outline: 5px solid var(--accent); outline-offset: 4px; }
+.coll-tab.on {
+  background: #fff;
+  border-bottom-color: var(--primary);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .16);
+  transform: translateY(-3px);
+}
+.coll-tab.full { border-bottom-color: var(--success); }
+.coll-tab .cti { font-size: clamp(26px, 6vw, 34px); line-height: 1.1; }
+.coll-tab .ctn { font-size: clamp(13px, 3vw, 16px); font-weight: 700; white-space: nowrap; }
+.coll-tab .ctc { font-size: clamp(12px, 2.6vw, 14px); color: var(--text-soft); }
+
+/* ---- แผงของในหมวด ---- */
+.coll-panel {
+  background: rgba(255, 255, 255, .92);
+  border-radius: var(--r);
+  padding: clamp(12px, 2.4vw, 20px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+}
+.coll-panel-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 8px;
+}
+.cph-name  { font-size: clamp(18px, 4.2vw, 24px); font-weight: 700; }
+.cph-count { font-size: clamp(15px, 3.4vw, 19px); color: var(--text-soft); font-weight: 700; }
+
+.coll-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(86px, 21vw, 124px), 1fr));
+  gap: clamp(8px, 1.8vw, 14px);
+  margin-top: 14px;
+}
+
+.coll-cell {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 2px;
+  padding: clamp(8px, 1.6vw, 12px) 6px clamp(8px, 1.6vw, 10px);
+  border: none;
+  border-bottom: 5px solid #E8DFCD;
+  border-radius: 20px;
+  background: var(--bg-cream);
+  font-family: inherit; color: var(--text);
+  cursor: pointer;
+  transition: transform var(--dur-fast);
+}
+.coll-cell:active { transform: translateY(3px); border-bottom-width: 2px; }
+.coll-cell:focus-visible { outline: 5px solid var(--accent); outline-offset: 4px; }
+
+.coll-cell .cc-art {
+  font-size: clamp(38px, 9vw, 54px);
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  height: clamp(46px, 11vw, 64px);
+}
+.coll-cell .cc-art .pic {
+  width: clamp(42px, 10vw, 60px);
+  height: clamp(42px, 10vw, 60px);
+  object-fit: contain;
+}
+.coll-cell .cc-en {
+  font-size: clamp(13px, 2.9vw, 16px); font-weight: 700; line-height: 1.15;
+  word-break: break-word;
+}
+.coll-cell .cc-th { font-size: clamp(11px, 2.5vw, 14px); color: var(--text-soft); line-height: 1.15; }
+
+/* ยังไม่ได้เก็บ = เห็นเป็นเงาของจริง ให้เด็กอยากตามเก็บ */
+.coll-cell.locked {
+  background: rgba(255, 255, 255, .55);
+  border-bottom-color: rgba(0, 0, 0, .08);
+}
+.coll-cell.locked .cc-art { filter: grayscale(1) brightness(0) opacity(.16); }
+.coll-cell.locked .cc-en  { color: var(--text-soft); letter-spacing: 2px; }
+.coll-cell .cc-lock {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 15px; opacity: .5;
+}
+
+.coll-done {
+  margin-top: 14px;
+  text-align: center;
+  font-size: clamp(16px, 3.6vw, 20px); font-weight: 700;
+  color: var(--text);
+  background: rgba(123, 201, 111, .22);
+  border-radius: 18px;
+  padding: 12px 16px;
+}
+
+.coll-actions {
+  display: flex; justify-content: center;
+  padding-top: 2px;
+}
+.coll-actions .btn { width: min(420px, 100%); }
+
+/* จอกว้าง: แถบหมวดกางเต็มไม่ต้องเลื่อน */
+@media (min-width: 700px) {
+  /* จอกว้างพอ: กางทุกหมวดให้เห็นครบแถวเดียว ไม่ต้องเลื่อน
+     ให้แต่ละหมวดยืดแบ่งความกว้างเท่า ๆ กัน จะได้ไม่ตกบรรทัดเหลือปุ่มโดดเดี่ยว */
+  .coll-strip-in { justify-content: center; flex-wrap: wrap; width: 100%; }
+  .coll-strip-in .coll-tab { flex: 1 1 92px; width: auto; max-width: 160px; }
+}
+
+/* จอเตี้ยแนวนอน (แท็บเล็ตวางนอน): บีบหัวเรื่องลงเพื่อให้เห็นของมากขึ้น */
+@media (orientation: landscape) and (max-height: 560px) {
+  .coll-head { padding: 8px 16px; }
+  .coll-title { font-size: 22px; }
+  .coll-sub { margin: 2px 0 6px; font-size: 14px; }
+  .coll-tab { min-height: 74px; width: 92px; }
+  .coll-tab .cti { font-size: 24px; }
+}
+
+/* ป้าย "ได้ของใหม่!" ไม่ให้ล้นจอเวลาได้หลายชิ้นพร้อมกัน */
+.collect-toast:nth-last-child(n + 4) { display: none; }

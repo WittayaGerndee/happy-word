@@ -147,6 +147,9 @@ function collectToast(w, pk) {
     '<span class="ct-emoji">' + face(w) + '</span>' +
     '<span class="ct-text"><b>' + w.english + '</b>' +
     '<small>' + h.emoji + ' เข้า' + h.name + 'แล้ว!</small></span>');
+  /* ได้ของหลายชิ้นพร้อมกัน (เช่นจบรอบเกม) ให้เหลือบนจอแค่ 3 ป้าย ไม่งั้นบังเกมหมด */
+  var live = document.querySelectorAll('.collect-toast');
+  while (live.length >= 3) { live[0].remove(); live = document.querySelectorAll('.collect-toast'); }
   t.style.bottom = (26 + document.querySelectorAll('.collect-toast').length * 86) + 'px';
   document.body.appendChild(t);
   later(function () { sfx.ting(); }, 120);
@@ -572,7 +575,7 @@ function el(tag, cls, html) {
 
 /* ภาพประจำคำ — ใช้ภาพจริงจาก assets/img ถ้ามี ถ้าไม่มีถอยไปใช้ emoji
    ขนาดอิงจาก font-size ของกล่องที่ครอบอยู่ (1.15em) จึงไม่ต้องแก้ CSS เดิม */
-var IMGV = '?v=6';
+var IMGV = '?v=7';
 function face(w, extra) {
   if (w && w.img) {
     return '<img class="pic ' + (extra || '') + '" src="assets/img/' + w.img + '.png' + IMGV +
@@ -1161,7 +1164,7 @@ window.addEventListener('beforeunload', save);
 /* ป้ายเวอร์ชันเล็ก ๆ มุมล่างขวา — ไว้เช็คว่าเบราว์เซอร์โหลดไฟล์ใหม่แล้วจริงไหม */
 var vTag = document.createElement('div');
 vTag.className = 'version-tag';
-vTag.textContent = 'v6';
+vTag.textContent = 'v7';
 document.body.appendChild(vTag);
 
 /* ============================================================
