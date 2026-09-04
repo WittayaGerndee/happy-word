@@ -889,3 +889,26 @@
 
 /* จัดตารางให้อยู่กลางแผง ดูสมดุลกว่าชิดบน */
 .coll-grid { align-content: center; }
+
+/* จอเตี้ย (iPhone SE / มือถือเครื่องเล็ก): ยุบหัวเรื่องให้เหลือบรรทัดเดียว
+   เพื่อแลกที่ว่างไปให้ "ของ" ได้อีกหนึ่งแถวเต็ม ๆ */
+@media (max-height: 700px) {
+  #app { padding-top: 88px; padding-bottom: 10px; }
+  .coll-head { padding: 5px 12px; text-align: center; }
+  .coll-title { display: inline; font-size: 15px; }
+  .coll-sub { display: inline; margin: 0 0 0 8px; font-size: 12px; }
+  .coll-bar { height: 6px; margin-top: 4px; }
+  .coll-panel-head { margin-bottom: 0; }
+  .cph-name { font-size: 14px; }
+  .cph-count { font-size: 13px; }
+  .coll-grid { margin-top: 6px; }
+  .coll-pager { padding-top: 4px; }
+  .coll-arrow { width: 46px; height: 46px; font-size: 18px; }
+}
+
+@media (max-height: 700px) {
+  /* บรรทัดเดียวจริง ๆ ไม่ให้ตกบรรทัดจนกินที่ */
+  .coll-head { white-space: nowrap; overflow: hidden; }
+  .coll-title { font-size: 13px; }
+  .coll-sub { font-size: 11px; margin-left: 6px; }
+}

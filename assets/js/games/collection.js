@@ -127,26 +127,41 @@ H.Screens.collection = function (params) {
   function measure() {
     var gap = window.innerWidth < 430 ? 8 : 12;
     var W = grid.clientWidth || wrap.clientWidth;
-    var avail = grid.clientHeight;
-    var MIN = 64, MAX = 132;      /* เล็กสุดที่นิ้วเด็กยังกดแม่น / ใหญ่สุดที่ยังไม่เทอะทะ */
+    var Hh = grid.clientHeight;
+    var MIN = 62, MAX = 132, BIG = 170;   /* เล็กสุดที่นิ้วเด็กยังกดแม่น / ปกติ / ใหญ่สุดตอนของน้อย */
+    var cols = 0, cw = 0, ch = 0, rows = 0;
 
-    /* คอลัมน์: กางให้เต็มความกว้าง โดยช่องไม่เกิน MAX */
-    var cols = Math.max(2, Math.floor((W + gap) / (MAX + gap)));
-    cols = Math.max(cols, colsFor(window.innerWidth));
-    var cw = Math.floor((W - gap * (cols - 1)) / cols);
-    if (cw < MIN) {
-      cols = Math.max(2, Math.floor((W + gap) / (MIN + gap)));
-      cw = Math.floor((W - gap * (cols - 1)) / cols);
+    /* 1) ถ้าของทั้งหมวดใส่ได้ในหน้าเดียว — ขยายช่องให้ใหญ่ที่สุดเท่าที่ยังพอดีจอ
+          (หมวดสัตว์มี 10 ชิ้น ไม่ควรเห็นเป็นช่องจิ๋วกลางที่ว่าง) */
+    for (var t = BIG; t >= MIN; t -= 2) {
+      var tch = Math.round(t * 1.28);
+      var tcols = Math.floor((W + gap) / (t + gap));
+      if (tcols < 2) continue;
+      var need = Math.ceil(list.length / tcols);
+      if (need * (tch + gap) - gap <= Hh) {
+        cw = t; ch = tch; cols = tcols; rows = need;
+        break;
+      }
     }
-    var ch = Math.round(cw * 1.28);
 
-    var rows = Math.floor((avail + gap) / (ch + gap));
-    if (rows < 1) {
-      /* จอเตี้ยมาก (มือถือแนวนอน) — ย่อช่องให้พอดีหนึ่งแถว ดีกว่าปล่อยให้ล้นออกนอกจอ */
-      ch = Math.max(52, avail);
-      cw = Math.min(cw, Math.round(ch / 1.28));
-      cols = Math.max(2, Math.floor((W + gap) / (cw + gap)));
-      rows = 1;
+    /* 2) ใส่ไม่หมด — ใช้ขนาดมาตรฐานแล้วแบ่งเป็นหน้า */
+    if (!cols) {
+      cols = Math.max(2, Math.floor((W + gap) / (MAX + gap)));
+      cols = Math.max(cols, colsFor(window.innerWidth));
+      cw = Math.floor((W - gap * (cols - 1)) / cols);
+      if (cw < MIN) {
+        cols = Math.max(2, Math.floor((W + gap) / (MIN + gap)));
+        cw = Math.floor((W - gap * (cols - 1)) / cols);
+      }
+      ch = Math.round(cw * 1.28);
+      rows = Math.floor((Hh + gap) / (ch + gap));
+      if (rows < 1) {
+        /* จอเตี้ยมาก (มือถือแนวนอน) — ย่อให้พอดีหนึ่งแถว ดีกว่าล้นออกนอกจอ */
+        ch = Math.max(52, Hh);
+        cw = Math.min(cw, Math.round(ch / 1.28));
+        cols = Math.max(2, Math.floor((W + gap) / (cw + gap)));
+        rows = 1;
+      }
     }
 
     perPage = Math.max(1, cols * rows);
